@@ -12,6 +12,7 @@
 # Q1: How many possible paths are there for 8 successes if everyone is honest?
 # Q2: How many if 5 people are dishonest?
 # Q3: How many honest people optimises the chance of 8 wins?
+# BONUS: Experiment with Bayesian updating
 
 # generating a matrix of all possible outcomes
 # fixed properties of the experiment
