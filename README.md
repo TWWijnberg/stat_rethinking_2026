@@ -1,7 +1,7 @@
 Statistical Rethinking (2026 Edition)
 ===============
 
-Registration: Is closed
+Registration: Is closed, but if you can get to the lecture hall, you are still welcome
 
 Instructor: Richard McElreath
 
