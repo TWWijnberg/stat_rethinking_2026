@@ -2,7 +2,7 @@
 # Run from project root or this folder; assumes `dishonesty_detection.R` defines the function
 
 # Load functions without running experiments (dishonesty_detection guarded by interactive())
-source("stat_rethinking_2026/homework/homework_A01/dishonesty_detection.R")
+source("scripts/01_dishonesty_detection.R")
 
 # 1) Brute-force enumeration vs function (small n)
 # This computes: given n participants, n_sides per die, n_wins observed,

@@ -1,6 +1,14 @@
 # https://github.com/rmcelreath/stat_rethinking_2026
 
 # ==============================================================================
+# ENVIRONMENT DOCUMENTATION
+# ==============================================================================
+# R version: 4.4.0
+# Platform: Windows 11
+# Key packages: tidyverse 2.0.0, ggplot2 3.5.0
+# Date: 2026-01-14
+
+# ==============================================================================
 # DISHONESTY DETECTION EXPERIMENT WITH BAYESIAN UPDATING
 # ==============================================================================
 # Research Question: How many ways are there to get 8 people claiming the prize,
@@ -416,13 +424,14 @@ exp1_result <- calculate_probabilities(exp1_outcome_matrix, decimals = 2)
                          sprintf("Posterior after Update %d:", i),
                          true_value = config_s2_p_dishonest_true)
   
-  # Create plot
-  plot_bayesian_results(
+  # Create plot using reusable function
+  plot_bayesian_update(
     bayesian_state$param_vals,
     update_results$prior_probs,
     update_results$likelihood_probs,
     update_results$posterior_probs,
-    sprintf("Dishonesty Detection: Update %d", i)
+    sprintf("Dishonesty Detection: Update %d", i),
+    update_number = i
   )
   
   # UPDATE STATE for next iteration

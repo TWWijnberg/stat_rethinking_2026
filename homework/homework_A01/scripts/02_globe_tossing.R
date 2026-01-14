@@ -28,7 +28,8 @@ config_globe_updates <- list(
        list(n = 3),   # Update 2: 30 tosses
   list(n = 3),    # Update 1: 20 tosses
   list(n = 30),   # Update 2: 30 tosses
-  list(n = 50)    # Update 3: 50 tosses
+  list(n = 50),    # Update 3: 50 tosses
+list(n = 100)   # Update 4: 100 tosses
 )
 
 # --- Helper Functions ---
@@ -88,27 +89,41 @@ bayesian_update <- function(param_vals, observed_data, prior_weights, n_sides) {
   )
 }
 
-#' Plot Bayesian updating cycle
+#' Plot Bayesian updating cycle with ggplot
 #'
 #' @param param_vals Parameter values
 #' @param update_results List from bayesian_update()
-#' @param title Title for plot
-plot_bayesian_update <- function(param_vals, update_results, title = "") {
-  ylim_range <- range(
-    update_results$prior_probs,
-    update_results$likelihood_probs,
-    update_results$posterior_probs
+#' @param update_number Update number for faceting
+#' @return ggplot object
+plot_bayesian_update_ggplot <- function(param_vals, update_results, update_number) {
+  # Create data frame for ggplot
+  plot_data <- data.frame(
+    parameter = param_vals,
+    prior = update_results$prior_probs,
+    likelihood = update_results$likelihood_probs,
+    posterior = update_results$posterior_probs
   )
-  
-  plot(param_vals, update_results$prior_probs,
-    type = "l", lwd = 2, lty = 1,
-    ylim = ylim_range,
-    xlab = "Parameter Value", ylab = "Probability",
-    main = title
-  )
-  lines(param_vals, update_results$likelihood_probs, lwd = 2, lty = 2)
-  lines(param_vals, update_results$posterior_probs, lwd = 2, lty = 3)
-  legend("topright", c("Prior", "Likelihood", "Posterior"), lty = 1:3, lwd = 2)
+
+  # Convert to long format
+  plot_data_long <- plot_data %>%
+    pivot_longer(cols = c(prior, likelihood, posterior),
+                 names_to = "distribution",
+                 values_to = "probability") %>%
+    mutate(distribution = factor(distribution,
+                                levels = c("prior", "likelihood", "posterior"),
+                                labels = c("Prior", "Likelihood", "Posterior")))
+
+  # Create ggplot
+  ggplot(plot_data_long, aes(x = parameter, y = probability, color = distribution)) +
+    geom_line(linewidth = 1) +
+    scale_color_manual(values = c("Prior" = "blue", "Likelihood" = "red", "Posterior" = "black")) +
+    labs(x = "Proportion Water",
+         y = "Probability",
+         title = sprintf("Update %d", update_number),
+         color = "Distribution") +
+    theme_minimal() +
+    theme(legend.position = "top",
+          plot.title = element_text(hjust = 0.5, size = 10))
 }
 
 #' Print posterior summary statistics
@@ -180,21 +195,24 @@ if (interactive()) {
   # ==============================================================================
   # SEQUENTIAL BAYESIAN UPDATING LOOP
   # ==============================================================================
-  
+
+  # Initialize list to store all update results for combined plotting
+  all_update_results <- list()
+
   for (i in seq_along(config_globe_updates)) {
     n_tosses <- config_globe_updates[[i]]$n
     bayesian_state$update_number <- i
-    
+
     # Generate new sample
     globe_sample <- generate_binary_sample(n_tosses, config_globe_p_true)
-    
+
     cat(sprintf("\n%s\n", paste0("=", rep("=", 78), collapse = "")))
     cat(sprintf("UPDATE %d: New Sample with %d Tosses\n", i, n_tosses))
     cat(sprintf("%s\n", paste0("=", rep("=", 78), collapse = "")))
-    
+
     print_sample_summary(globe_sample$successes, globe_sample$n,
                          sprintf("Update %d Sample", i))
-    
+
     # Perform Bayesian update using PREVIOUS posterior as new prior
     update_results <- bayesian_update(
       bayesian_state$param_vals,
@@ -202,22 +220,86 @@ if (interactive()) {
       bayesian_state$posterior_counts,  # Use previous posterior as prior!
       config_globe_sides
     )
-    
+
+    # Store results for combined plotting
+    all_update_results[[i]] <- list(
+      update_number = i,
+      sample_size = n_tosses,
+      results = update_results
+    )
+
     # Print posterior summary
     print_posterior_summary(bayesian_state$param_vals, update_results$posterior_probs,
                            sprintf("Posterior after Update %d:", i),
                            true_value = config_globe_p_true)
-    
-    # Create plot
-    options(device = windows())
-    plot_bayesian_update(
-      bayesian_state$param_vals,
-      update_results,
-      sprintf("Globe Tossing: Update %d", i)
-    )
-    
+
     # UPDATE STATE for next iteration
     bayesian_state$posterior_counts <- update_results$posterior_counts
     bayesian_state$posterior_probs <- update_results$posterior_probs
   }
+
+  # ==============================================================================
+  # CREATE COMBINED FACETED PLOT
+  # ==============================================================================
+
+  cat("\nCreating combined visualization of all updates...\n")
+
+  # Create data frame for all updates
+  combined_plot_data <- data.frame()
+
+  for (i in seq_along(all_update_results)) {
+    update_info <- all_update_results[[i]]
+    update_results <- update_info$results
+
+    # Create data frame for this update
+    update_data <- data.frame(
+      parameter = globe_param_vals,
+      prior = update_results$prior_probs,
+      likelihood = update_results$likelihood_probs,
+      posterior = update_results$posterior_probs,
+      update = factor(sprintf("Update %d\n(n=%d)",
+                             update_info$update_number,
+                             update_info$sample_size),
+                     levels = sprintf("Update %d\n(n=%d)",
+                                    sapply(all_update_results, `[[`, "update_number"),
+                                    sapply(all_update_results, `[[`, "sample_size")))
+    )
+
+    combined_plot_data <- rbind(combined_plot_data, update_data)
+  }
+
+  # Convert to long format for ggplot
+  combined_plot_data_long <- combined_plot_data %>%
+    pivot_longer(cols = c(prior, likelihood, posterior),
+                 names_to = "distribution",
+                 values_to = "probability") %>%
+    mutate(distribution = factor(distribution,
+                                levels = c("prior", "likelihood", "posterior"),
+                                labels = c("Prior", "Likelihood", "Posterior")))
+
+  # Create faceted plot
+  combined_plot <- ggplot(combined_plot_data_long,
+                         aes(x = parameter, y = probability, color = distribution)) +
+    geom_line(linewidth = 0.8) +
+    scale_color_manual(values = c("Prior" = "blue", "Likelihood" = "red", "Posterior" = "black")) +
+    labs(x = "Proportion Water",
+         y = "Probability Density",
+         title = "Globe Tossing: Sequential Bayesian Updates",
+         subtitle = sprintf("True water proportion: %.1f%%", config_globe_p_true * 100),
+         color = "Distribution") +
+    facet_wrap(~ update, scales = "free_y") +
+    theme_minimal() +
+    theme(legend.position = "top",
+          plot.title = element_text(hjust = 0.5, face = "bold"),
+          plot.subtitle = element_text(hjust = 0.5),
+          strip.text = element_text(size = 8))
+
+  # Save the combined plot
+  ggsave("output/figures/globe_tossing_updates_combined.png",
+         combined_plot, width = 12, height = 8, dpi = 300)
+  ggsave("output/figures/globe_tossing_updates_combined.pdf",
+         combined_plot, width = 12, height = 8)
+
+  cat("✓ Combined plot saved to output/figures/globe_tossing_updates_combined.png\n")
+  cat("✓ Combined plot saved to output/figures/globe_tossing_updates_combined.pdf\n")
 } # end interactive guard

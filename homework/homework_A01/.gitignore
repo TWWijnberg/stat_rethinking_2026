@@ -1,0 +1,50 @@
+# R Project Files
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+# Data files
+data/raw/
+data/processed/
+data/simulated/
+
+# Output files
+output/
+*.pdf
+*.html
+*.tex
+*.log
+
+# R Environment
+.Renviron
+.env
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# IDE Files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+*~
+*.tmp
+*.bak
+
+# Package development
+src/
+*.tar.gz
+*.Rcheck/
+
+# MCMC outputs
+models/fitted/
+*.rds
+*.rda
+
+# Logs
+*.log
+logs/
