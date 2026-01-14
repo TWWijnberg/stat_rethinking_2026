@@ -21,6 +21,8 @@
 
 set.seed(123455)  # Reproducibility: set for consistent random samples
 
+library(ggplot2)
+
 # --- Section 1 Parameters ---
 config_s1_n_total <- 10
 config_s1_sides <- 2
@@ -334,6 +336,41 @@ exp1_outcome_matrix <- create_outcome_matrix(
 
 exp1_result <- calculate_probabilities(exp1_outcome_matrix, decimals = 2)
 
+  # Extract probabilities for n_dishonest given 7 wins observed
+  probs_n_dishonest_given_7wins <- exp1_result[, "wins=7"]
+
+  # Draw 1000 samples of dishonest participants using the calculated distribution
+  set.seed(42)  # For reproducibility in predictions
+  sampled_n_dishonest <- sample(config_s1_n_dishonest_vals, 1000, replace = TRUE, prob = probs_n_dishonest_given_7wins)
+
+  # For each draw of dishonest participants, simulate number of wins
+  # Dishonest: 100% win, Honest: 50% win (coin flip)
+  simulated_wins <- sapply(sampled_n_dishonest, function(nd) {
+    nd + rbinom(1, config_s1_n_total - nd, 0.5)
+  })
+
+  # Visualization 1: Overlay of theoretical and sampled n_dishonest distributions
+  df_theoretical <- data.frame(n_dishonest = 0:10, prob = probs_n_dishonest_given_7wins, type = "Theoretical")
+  sampled_probs <- prop.table(table(factor(sampled_n_dishonest, levels = 0:10)))
+  df_sampled <- data.frame(n_dishonest = 0:10, prob = as.numeric(sampled_probs), type = "Sampled")
+  df <- rbind(df_theoretical, df_sampled)
+  ggplot(df, aes(x = n_dishonest, y = prob, fill = type)) +
+    geom_col(position = "identity", alpha = 0.5) +
+    scale_fill_manual(values = c("Theoretical" = "lightblue", "Sampled" = "lightgreen")) +
+    labs(title = "Comparison of Theoretical and Sampled n_dishonest Distributions", x = "n_dishonest", y = "Probability") +
+    theme_minimal()
+
+  # Visualization 2: Overlay of theoretical wins for n_dishonest=5/7 and simulated wins
+  df_theo5 <- data.frame(wins = 5:10, prob = dbinom(0:5, 5, 0.5), type = "n_dishonest=5")
+  df_theo7 <- data.frame(wins = 7:10, prob = dbinom(0:3, 3, 0.5), type = "n_dishonest=7")
+  simulated_probs_wins <- prop.table(table(factor(simulated_wins, levels = 0:10)))
+  df_sim <- data.frame(wins = 0:10, prob = as.numeric(simulated_probs_wins), type = "Simulated")
+  df_wins <- rbind(df_theo5, df_theo7, df_sim)
+  ggplot(df_wins, aes(x = wins, y = prob, fill = type)) +
+    geom_col(position = "identity", alpha = 0.5) +
+    scale_fill_manual(values = c("n_dishonest=5" = "lightblue", "n_dishonest=7" = "lightgreen", "Simulated" = "lightcoral")) +
+    labs(title = "Theoretical Wins for n_dishonest=5/7 and Simulated Distribution", x = "Number of Wins", y = "Probability") +
+    theme_minimal()
 
   # Display results
   cat("================================================================================\n")
