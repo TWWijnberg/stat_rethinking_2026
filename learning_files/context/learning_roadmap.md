@@ -437,18 +437,18 @@ How to know you're advancing:
 - [ ] Can build a multilevel model and explain why partial pooling helps
 
 **R Development**
-- [ ] Projects have consistent structure; you never use `setwd()`
+- [x] Projects have consistent structure; you never use `setwd()` *(set up repo with .Rproj, renv at root, contributions in subfolder)*
 - [ ] You extract functions when you notice repetition
-- [ ] Your git history tells a story; you can revert problematic changes
+- [x] Your git history tells a story; you can revert problematic changes *(practiced commits with meaningful messages during A02 and reorganization)*
 - [ ] You write at least basic tests for important functions
-- [ ] renv feels like a tool, not a mystery
+- [x] renv feels like a tool, not a mystery *(understand renv.lock captures versions, renv/ holds library, .Rprofile activates it)*
 
 **Code Execution**
 - [ ] Can explain what `library()` does and where packages come from
 - [ ] Can diagnose "package not found" errors systematically
-- [ ] Understand the difference between your R process and your IDE
-- [ ] Can check your current state (working directory, library paths, loaded packages)
-- [ ] Configuration files don't feel like magic
+- [x] Understand the difference between your R process and your IDE *(VSCode sends code to R process; they're separate programs)*
+- [x] Can check your current state (working directory, library paths, loaded packages) *(know to use getwd(), .libPaths())*
+- [x] Configuration files don't feel like magic *(understand .Rprofile, .Rproj, renv.lock, .gitignore, .vscode/settings.json)*
 
 **AI Collaboration**
 - [ ] Can write prompts that consistently get useful responses
@@ -459,4 +459,4 @@ How to know you're advancing:
 
 ---
 
-*Document version: 1.1 | Updated: 2026-01-21 | A02 complete, updated progress markers*
+*Document version: 1.2 | Updated: 2026-01-21 | Added R development and code execution progress from config files session*

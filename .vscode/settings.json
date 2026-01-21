@@ -2,5 +2,6 @@
   "r.rterm.windows": "C:\\Program Files\\R\\R-4.5.2\\bin\\x64\\Rterm.exe",
   "r.rterm.option": ["--no-save", "--no-restore"],
   "r.sessionWatcher": true,
-  "r.alwaysUseActiveTerminal": true
+  "r.alwaysUseActiveTerminal": true,
+  "r.plot.useHttpgd": true
 }
