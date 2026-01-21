@@ -1,0 +1,31 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start R (radian)",
+      "type": "shell",
+      "command": "\"C:\\Users\\Thijs\\AppData\\Roaming\\Python\\Python314\\Scripts\\radian.exe\"",
+      "isBackground": false,
+      "problemMatcher": [],
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "Start R (standard)",
+      "type": "shell",
+      "command": "\"C:\\Program Files\\R\\R-4.5.2\\bin\\x64\\Rterm.exe\" --no-save --no-restore",
+      "isBackground": false,
+      "problemMatcher": [],
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "dedicated"
+      }
+    }
+  ]
+}

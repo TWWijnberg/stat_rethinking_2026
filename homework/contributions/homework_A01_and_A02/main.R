@@ -20,13 +20,13 @@ set_working_directory <- function() {
   current_dir <- getwd()
 
   # Check if we're already in the homework_A01 directory
-  if (basename(current_dir) == "homework_A01") {
-    cat("Working directory already set to homework_A01\n")
+  if (basename(current_dir) == "homework_A01_and_A02") {
+    cat("Working directory already set to homework_A01_and_A02\n")
     return(invisible(NULL))
   }
 
   # Try to find the homework_A01 directory
-  homework_dir <- file.path(current_dir, "stat_rethinking_2026", "homework", "homework_A01")
+  homework_dir <- file.path(current_dir, "stat_rethinking_2026", "homework", "homework_A01_and_A02")
 
   if (dir.exists(homework_dir)) {
     setwd(homework_dir)

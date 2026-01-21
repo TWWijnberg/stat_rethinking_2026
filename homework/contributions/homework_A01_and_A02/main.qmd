@@ -1,0 +1,64 @@
+---
+title: "Homework A01: Bayesian Analysis of Dishonesty Detection"
+author: "Generated Analysis Report"
+date: "`r Sys.Date()`"
+format:
+  html:
+    theme: cosmo
+    toc: true
+    toc-depth: 2
+    number-sections: true
+    code-fold: true
+---
+
+# Introduction
+
+This document contains the complete analysis for Homework A01: Bayesian Analysis of Dishonesty Detection. The analysis includes combinatorial approaches to understanding possible outcomes under different assumptions about participant honesty, followed by Bayesian inference using observed data.
+
+All code and output are generated directly in this document.
+
+# Environment Setup
+
+```{r setup, message=FALSE, warning=FALSE}
+# Set working directory
+current_dir <- getwd()
+if (!basename(current_dir) == "homework_A01") {
+  setwd(file.path(current_dir, "stat_rethinking_2026", "homework", "homework_A01"))
+}
+
+# Source setup script
+source("scripts/00_setup.R")
+```
+
+# Dishonesty Detection Analysis
+
+```{r dishonesty_analysis, message=TRUE, warning=FALSE}
+# Run the dishonesty detection analysis
+source("scripts/01_dishonesty_detection.R")
+```
+
+# Globe Tossing Analysis
+
+```{r globe_tossing, message=TRUE, warning=FALSE}
+# Run the comparative globe tossing analysis
+source("scripts/02_globe_tossing.R")
+```
+
+# Validation Tests
+
+```{r validation, message=TRUE, warning=FALSE}
+# Run validation tests if available
+if (file.exists("tests/smoke_likelihoods.R")) {
+  source("tests/smoke_likelihoods.R")
+} else {
+  cat("Validation tests not found.\n")
+}
+```
+
+# Summary
+
+Analysis complete. All output files have been generated in the `output/` directory.
+
+- **Figures**: `output/figures/`
+- **Tables**: `output/tables/`
+- **Reports**: `output/reports/`

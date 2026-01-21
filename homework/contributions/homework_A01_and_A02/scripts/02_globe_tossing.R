@@ -14,22 +14,21 @@
 
 set.seed(123456)  # Reproducibility: set for consistent random samples
 
+# Assignment 2
+# A2. Suppose the globe tossing data (Chapter 2) had turned out to be 3 water and 11 land. 
+# Construct the posterior distribution. 
+# Then using the posterior distribution, compute the posterior predictive distribution for the next 5 tosses of the same globe.
+
+
 # --- Globe Tossing Parameters ---
-config_globe_sides <- 100
-config_globe_p_true <- 0.5
+config_globe_sides <- 14
+config_globe_p_true <- 3/14
 config_globe_prior_weights <- rep(1, config_globe_sides + 1)
 
 # --- Sequential Update Configuration ---
 config_globe_updates <- list(
-   list(n = 3),   # Update 2: 30 tosses
-    list(n = 3),   # Update 2: 30 tosses
-     list(n = 3),   # Update 2: 30 tosses
-      list(n = 3),   # Update 2: 30 tosses
-       list(n = 3),   # Update 2: 30 tosses
-  list(n = 3),    # Update 1: 20 tosses
-  list(n = 30),   # Update 2: 30 tosses
-  list(n = 50),    # Update 3: 50 tosses
-list(n = 100)   # Update 4: 100 tosses
+   list(n = 10),   # Update 1: 30 tosses
+    list(n = 10)   # Update 2: 30 tosses
 )
 
 # --- Helper Functions ---
@@ -88,6 +87,11 @@ bayesian_update <- function(param_vals, observed_data, prior_weights, n_sides) {
     prior_probs = prior_weights / sum(prior_weights)
   )
 }
+
+
+
+
+
 
 #' Plot Bayesian updating cycle with ggplot
 #'
