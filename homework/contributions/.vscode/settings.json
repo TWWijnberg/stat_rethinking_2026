@@ -1,7 +1,0 @@
-{
-  "r.rterm.windows": "C:\\Program Files\\R\\R-4.5.2\\bin\\x64\\Rterm.exe",
-  "r.rterm.option": ["--no-save", "--no-restore"],
-  "r.rpath.lsp": "C:\\Program Files\\R\\R-4.5.2\\bin\\x64\\Rterm.exe",
-  "r.sessionWatcher": true,
-  "r.alwaysUseActiveTerminal": true
-}

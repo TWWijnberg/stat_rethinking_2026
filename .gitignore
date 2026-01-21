@@ -1,0 +1,36 @@
+# R artifacts
+.Rhistory
+.Rdata
+.RDataTmp
+.Ruserdata
+*.Rproj.user/
+
+# renv (library is large; lockfile is enough)
+renv/library/
+renv/staging/
+renv/python/
+renv/sandbox/
+renv/local/
+renv/cellar/
+
+# Stan compiled models
+*.exe
+*.o
+*.so
+*.dll
+
+# Generated outputs (optional - uncomment to ignore)
+# homework/contributions/*/outputs/*.png
+# homework/contributions/*/outputs/*.rds
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Temporary
+*.tmp
+*~
