@@ -6,20 +6,15 @@
 
 ## How to Use This Document
 
-This roadmap covers four interconnected learning areas. You don't need to master each area sequentially—they reinforce each other. The Statistical Rethinking course provides the backbone, and the other three areas enhance your ability to learn from it and apply it professionally.
+This roadmap covers four interconnected learning areas. You don't need to master each area sequentially—they reinforce each other. The Statistical Rethinking course provides the backbone, and the other three areas emerge naturally as you work through homework.
 
-Each section follows the same structure:
-1. **Why This Matters** — The practical payoff for investing time here
-2. **Where You Are Now** — Your starting point based on our conversation
-3. **Learning Progression** — Topics organized from foundational to advanced
-4. **Integration Points** — How this connects to your other learning goals
+Each section shows:
+1. **Why This Matters** — The practical payoff
+2. **Where You Are Now** — Your starting point
+3. **Learning Progression** — Topics from foundational to advanced
+4. **Integration Points** — How areas connect
 
-**Bonus Topics:** As we work together, I'll occasionally suggest adjacent topics that could enhance your learning (e.g., "This seems like a good moment to explore X—would you like to add it to your plan?"). Feel free to accept or decline based on your energy and time.
-
-Time investment suggestion: Of your 4 hours/week, allocate roughly:
-- 2.5 hours: Statistical Rethinking lectures + homework
-- 1 hour: R development practices (applied to your homework)
-- 0.5 hours: Environment understanding and AI collaboration (as needed)
+The time spent on each area will vary week to week based on what you encounter. Don't force it—let the homework drive what you need to learn.
 
 ---
 
@@ -403,25 +398,16 @@ Meta-level optimization:
 
 ---
 
-## Recommended Weekly Rhythm
+## Finding Your Rhythm
 
-Given your 4 hours/week and morning learning preference:
+Work in the mornings when your energy is high. You can focus for extended periods when engaged.
 
-**Day 1 (1.5 hours): Lecture and initial homework attempt**
-- Watch the week's lecture (or review notes if in-person)
-- Read the relevant chapter section
-- Start homework—attempt problems before seeking help
+A typical week might involve:
+- Engaging with lecture material
+- Attempting homework (struggle first, ask for help when genuinely stuck)
+- Brief reflection on what you learned
 
-**Day 2 (1.5 hours): Homework completion with deliberate practice**
-- Continue homework, applying one R development practice intentionally (e.g., "today I'll commit after each problem with meaningful messages")
-- When stuck, use AI tutor mode: ask for hints, not answers
-
-**Day 3 (1 hour): Review and consolidation**
-- Review solution if available; compare to your approach
-- If your code worked but feels messy, refactor it
-- Update your notes with key insights
-
-Adjust based on what actually works. This is a starting point, not a mandate.
+The exact timing and breakdown will vary. Let your actual experience guide you, not a predetermined schedule.
 
 ---
 

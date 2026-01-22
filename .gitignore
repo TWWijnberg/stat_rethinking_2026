@@ -33,3 +33,7 @@ Thumbs.db
 # Temporary
 *.tmp
 *~
+
+# config files
+.claude/
+.vscode/

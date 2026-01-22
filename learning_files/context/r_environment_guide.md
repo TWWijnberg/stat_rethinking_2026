@@ -131,6 +131,31 @@ list.files(renv::paths$library())
 
 **Fix:** Install while renv is active: `renv::install("packagename")` or `install.packages("packagename")` with renv active (it intercepts the call).
 
+### renv snapshot vs restore confusion
+
+**What's happening:** You ran `renv::snapshot()` and thought packages were installed, but they're not available in your R session.
+
+**Key distinction:**
+- `renv::snapshot()` - Writes package information to `renv.lock` (the lockfile). This records what *should* be installed but doesn't actually install anything.
+- `renv::restore()` - Reads `renv.lock` and actually installs packages into the project library.
+
+**The workflow:**
+```r
+# 1. Install packages
+renv::install("packagename")
+
+# 2. Record to lockfile (for version control)
+renv::snapshot()
+
+# 3. Later, or on another machine: actually install from lockfile
+renv::restore()
+
+# 4. Verify everything is in sync
+renv::status()  # Should say "No issues found"
+```
+
+**Common mistake:** Running `renv::snapshot()` after installing packages to your user library, then wondering why `library(packagename)` fails. The lockfile records the package, but it's not in your renv project library until you restore.
+
 ### Settings "not sticking" between sessions
 
 **What's happening:** Each R session starts fresh. Loading a package or setting an option only affects the current session.
