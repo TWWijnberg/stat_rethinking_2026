@@ -66,7 +66,7 @@ Don't immediately give the answer unless I explicitly ask for it or we've alread
 
 ## Technical Context
 
-**Current learning project:** Statistical Rethinking 2026 course (Beginner section). Completed A01, A02. Next: A03.
+**Current learning project:** Statistical Rethinking 2026 course (Beginner section). Completed A01, A02, A03. Next: A04.
 
 **R environment:** Using VSCode with R extension. Learning renv for package management.
 

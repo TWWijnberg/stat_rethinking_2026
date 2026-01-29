@@ -417,7 +417,7 @@ How to know you're advancing:
 
 **Bayesian Statistics**
 - [ ] Can explain the difference between Bayesian and frequentist inference to a colleague
-- [ ] Can draw a DAG for a research question and identify confounds
+- [x] Can draw a DAG for a research question and identify confounds *(A03: built height/weight/age/sex/nutrition DAG, identified confounds)*
 - [x] Can interpret posterior distributions and explain uncertainty *(A02: articulated posterior vs posterior predictive, understood prior influence)*
 - [ ] Can diagnose MCMC issues and know how to address them
 - [ ] Can build a multilevel model and explain why partial pooling helps
