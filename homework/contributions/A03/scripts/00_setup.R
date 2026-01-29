@@ -8,7 +8,8 @@ library(rethinking)
 library(here)
 library(tidyverse)
 library(cmdstanr)
-library(ggplot2)
+library(dagitty)
+
 
 # ---- Options ----
 options(mc.cores = parallel::detectCores())

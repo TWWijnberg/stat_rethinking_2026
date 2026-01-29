@@ -18,7 +18,7 @@ sim_weight <- function(height, beta, alpha, sd, n){
     return(weight)
 }
 
-n_synthetic <- 60
+n_synthetic <- 100
 proportion_male <- 0.5
 n_synthetic_male <- round(n_synthetic * proportion_male)
 n_synthetic_female <- n_synthetic - n_synthetic_male
@@ -38,9 +38,6 @@ weight_synthetic_male <- sim_weight(
     )
 # plot the males to see if they look OK
 plot(height_synthetic_male, weight_synthetic_male, xlab = "Height (cm)", ylab = "Weight (kg)", main = "Synthetic male Height vs Weight Data", xlim = c(130, 220), ylim = c(30, 120))
-
-
-
 
 # and now generate some females with a different height, alpha, slope and sd
 alpha_synthetic_female <- 0
@@ -64,6 +61,8 @@ df_synthetic <- data.frame(
     sex = c(rep("male", n_synthetic_male), rep("female", n_synthetic_female))
 )
 
+# ---- Step 2 ----
+# Look at the data
 
 ggplot(df_synthetic, aes(x = height, y = weight, color = sex)) +
     geom_point() +
@@ -76,13 +75,13 @@ ggplot(df_synthetic, aes(x = height, y = weight, color = sex)) +
 weight_model <- alist(
     weight ~ dnorm(mu, sigma),
     mu <- a + b_height * height,
-    a ~ dnorm(0, 10),
-    b_height ~ dunif(0, 1),
-    sigma ~ dunif(0, 10)
+    a ~ dnorm(0, 20),
+    b_height ~ dunif(0, 3),
+    sigma ~ dunif(0, 20)
     )
 
 # fit the model using quap and synthetic data
-fitted_model <- quap(weight_model, data = df_synthetic)
+fitted_model <- quap(weight_model, data = list(height = df_synthetic$height, weight = df_synthetic$weight))
 
 # Prior predictive simulation: visualize what lines the prior allows
 height_seq <- seq(130, 220, length.out = 50)
