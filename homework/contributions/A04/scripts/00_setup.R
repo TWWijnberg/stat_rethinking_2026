@@ -1,4 +1,4 @@
-# Homework A03 - Setup
+# Homework A04 - Setup
 # Statistical Rethinking 2026
 #
 # Common setup script - run this first

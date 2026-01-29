@@ -31,17 +31,30 @@ stat_rethinking_2026/
 
 Each homework folder is self-contained:
 ```
-homework/contributions/A03/
-├── scripts/         # Numbered R scripts (00_setup.R, 01_problem1.R, ...)
+homework/contributions/A04/
+├── scripts/         # Numbered scripts following scientific workflow
+│   ├── 00_setup.R
+│   ├── 01_scientific_model.R
+│   ├── 02_prior_checking.R
+│   ├── 03_fit_real_data.R
+│   └── 04_postprocessing.R
 ├── data/           # raw/ (never modify) and processed/
 ├── outputs/        # figures/ and results/
 └── docs/           # Your notes and reflections
 ```
 
+**Script workflow** (following Statistical Rethinking methodology):
+- **00_setup.R**: Libraries, options, helper functions
+- **01_scientific_model.R**: DAG definition, synthetic data generation, initial visualizations
+- **02_prior_checking.R**: Statistical model definition, prior predictive simulation, fit on synthetic data
+- **03_fit_real_data.R**: Load real data, fit model, posterior predictive checks, diagnostics
+- **04_postprocessing.R**: Extract causal estimates, counterfactuals, final visualizations
+
 **Why it matters:**
 - **data/raw/** is read-only. Any processing creates new files in **data/processed/**
-- **Numbered scripts** (00_, 01_, 02_) show execution order at a glance
-- **00_setup.R** loads libraries and sets paths; other scripts source it
+- **Scientific workflow** ensures you validate models before fitting real data
+- **Each script sources the previous** creating a reproducible pipeline
+- **DAG comes first** - makes causal assumptions explicit before statistical modeling
 - **Separating outputs** means you can regenerate everything by re-running scripts
 
 ---
@@ -139,5 +152,28 @@ Don't update for the sake of updating. Update when you have something real to ca
 
 ---
 
-*Version: 2.0 | Simplified: 2026-01-22*
+---
+
+## Key Concepts from A04 Session
+
+**Causal vs Predictive Inference:**
+- **Predictive**: Model doesn't need a causal structure, just needs to predict well
+- **Causal**: Requires explicit scientific model (DAG) representing causal assumptions
+- Same statistical model, different interpretation depending on the question
+
+**Backdoor Paths:**
+- Non-causal paths from exposure to outcome (go backward through at least one arrow)
+- Create confounding - make associations appear even without causal effects
+- Example: Age ← Sex → Height is a backdoor path confounding Age → Height
+
+**Controlling for Confounders:**
+- Include measured confounders in statistical model to block backdoor paths
+- **Cannot** control for unmeasured confounders - acknowledge this limitation
+- DAG makes you honest about what you can and cannot claim
+
+**A04 Focus:** Estimating the causal effect of Age on Height, controlling for Sex as a measured confounder, while acknowledging unmeasured confounding from Nutrition.
+
+---
+
+*Version: 2.1 | Updated: 2026-01-29 | Added scientific workflow structure and causal inference concepts*
 *This document evolves based on what actually works, not predictions about what should work*

@@ -72,7 +72,7 @@ Don't immediately give the answer unless I explicitly ask for it or we've alread
 
 **Development goals:** Writing more modular code, using git effectively, understanding when/how to test, structuring projects properly.
 
-**Statistics background:** Solid frequentist foundation. Building Bayesian inference skills—can articulate posterior vs posterior predictive, understands role of priors.
+**Statistics background:** Solid frequentist foundation. Building Bayesian inference skills—can articulate posterior vs posterior predictive, understands role of priors. Learning causal inference with DAGs—understands backdoor paths, confounding, and the distinction between causal and predictive modeling.
 
 ---
 
