@@ -1,6 +1,6 @@
 # Homework A04 - Post-processing
 # Statistical Rethinking 2026
-#
+# https://www.youtube.com/watch?v=GIdwLrW2nNo
 # Step 4: Extract and visualize causal estimates
 
 # ---- Setup ----

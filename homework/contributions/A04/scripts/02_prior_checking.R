@@ -1,6 +1,6 @@
 # Homework A04 - Prior Checking
 # Statistical Rethinking 2026
-#
+# https://www.youtube.com/watch?v=GIdwLrW2nNo
 # Step 2: Prior predictive simulation, fit model on synthetic data,
 # and inspect the fitted model
 

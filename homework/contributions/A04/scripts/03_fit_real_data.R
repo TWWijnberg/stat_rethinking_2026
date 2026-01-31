@@ -1,6 +1,6 @@
 # Homework A04 - Fit Real Data
 # Statistical Rethinking 2026
-#
+# https://www.youtube.com/watch?v=GIdwLrW2nNo
 # Step 3: Load real data, fit the model, and perform diagnostics
 
 # ---- Setup ----
