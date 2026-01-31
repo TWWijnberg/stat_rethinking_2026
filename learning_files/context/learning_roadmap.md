@@ -417,15 +417,18 @@ How to know you're advancing:
 
 **Bayesian Statistics**
 - [ ] Can explain the difference between Bayesian and frequentist inference to a colleague
-- [x] Can draw a DAG for a research question and identify confounds *(A03: built height/weight/age/sex/nutrition DAG, identified confounds)*
+- [x] Can draw a DAG for a research question and identify confounds *(A03: built height/weight/age/sex/nutrition DAG, identified confounds; A04: built Age/Sex→Height→Weight DAG)*
 - [x] Can interpret posterior distributions and explain uncertainty *(A02: articulated posterior vs posterior predictive, understood prior influence)*
+- [x] Can generate synthetic data following a DAG structure *(A04: created sim_children() function with causal ordering)*
 - [ ] Can diagnose MCMC issues and know how to address them
 - [ ] Can build a multilevel model and explain why partial pooling helps
 
 **R Development**
 - [x] Projects have consistent structure; you never use `setwd()` *(set up repo with .Rproj, renv at root, contributions in subfolder)*
-- [ ] You extract functions when you notice repetition
+- [x] You extract functions when you notice repetition *(A04: created sim_children() with parameterized coefficients)*
 - [x] Your git history tells a story; you can revert problematic changes *(practiced commits with meaningful messages during A02 and reorganization)*
+- [x] Can work with factors as first-class data types *(A04: used factors directly in mathematical expressions)*
+- [x] Can combine ggplot visualizations effectively *(A04: used patchwork to arrange diagnostic plots)*
 - [ ] You write at least basic tests for important functions
 - [x] renv feels like a tool, not a mystery *(understand renv.lock captures versions, renv/ holds library, .Rprofile activates it)*
 
@@ -445,4 +448,4 @@ How to know you're advancing:
 
 ---
 
-*Document version: 1.2 | Updated: 2026-01-21 | Added R development and code execution progress from config files session*
+*Document version: 1.3 | Updated: 2026-01-31 | A04 Step 1 complete: DAG creation, synthetic data generation, and visualization*
