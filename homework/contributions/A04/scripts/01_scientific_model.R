@@ -47,90 +47,125 @@ adjustmentSets(weight_age_dag, effect = "direct")
 # Plot the DAG
 plot(weight_age_dag)
 
+# ---- Define True Parameters for Synthetic Data ----
+# Store true parameters so we can check if model recovers them
+# Using index coding: separate intercepts for each sex
+# sex_id: 1 = Female, 2 = Male
+true_params <- list(
+  # Height model parameters
+  a_height = c(60, 65),   # intercepts by sex (Female: 30cm, Male: 35cm)
+  b_height_age = 0.5,     # cm per month
+  sigma_height = 6,       # residual SD for height
+
+  # Weight model parameters
+  a_weight = c(-10, -8),  # intercepts by sex (Female: -10kg, Male: -8kg)
+  b_weight_height = 0.20, # kg per cm of height
+  b_weight_age = 0.05,    # kg per month (holding height constant)
+  sigma_weight = 5        # residual SD for weight
+)
+
 # ---- Generate Synthetic Data ----
 # Function to generate synthetic data following the DAG structure
 # Age and Sex are exogenous (no parents)
 # Height depends on Age and Sex
 # Weight depends on Height, Age, and Sex
 
-sim_children <- function(n = 200,
-                        # Height model parameters
-                        h_intercept = 50,
-                        h_age = 0.7,
-                        h_sex = 5,
-                        h_sigma = 10,
-                        # Weight model parameters
-                        w_intercept = -10,
-                        w_height = 0.33,
-                        w_age = 0.05,
-                        w_sex = 2,
-                        w_sigma = 3) {
-
+sim_children <- function(n = 200, params = true_params) {
   # Exogenous variables (no parents in DAG)
   age <- runif(n, 0, 156)  # age in months (0 to 13 years)
-  sex <- factor(sample(c("Male", "Female"), n, replace = TRUE),
-                levels = c("Male", "Female"))
+  sex <- factor(sample(c("Female", "Male"), n, replace = TRUE),
+                levels = c("Female", "Male"))
+  sex_id <- as.integer(sex)  # 1 = Female, 2 = Male
 
   # Height = f(Age, Sex)
-  height <- h_intercept +
-    h_age * age +
-    h_sex * (sex == "Male") +
-    rnorm(n, 0, h_sigma)
+  # Using index coding: params$a_height[sex_id]
+  height <- params$a_height[sex_id] +
+    params$b_height_age * age +
+    rnorm(n, 0, params$sigma_height)
 
   # Weight = f(Height, Age, Sex)
-  weight <- w_intercept +
-    w_height * height +
-    w_age * age +
-    w_sex * (sex == "Male") +
-    rnorm(n, 0, w_sigma)
+  # Using index coding: params$a_weight[sex_id]
+  weight <- params$a_weight[sex_id] +
+    params$b_weight_height * height +
+    params$b_weight_age * age +
+    rnorm(n, 0, params$sigma_weight)
 
-  data.frame(age = age, sex = sex, height = height, weight = weight)
+  data.frame(age = age, sex = sex, sex_id = sex_id,
+             height = height, weight = weight)
 }
 
 # Generate synthetic data
-set.seed(42)
-d_sim <- sim_children(n = 200)
+d_sim <- sim_children(n = 200, params = true_params)
+
+# ---- Load Real Data for Comparison ----
+# Load Howell1 dataset and prepare it the same way as synthetic data
+data(Howell1)
+d_real <- Howell1[Howell1$age < 13, ]
+d_real$sex <- factor(ifelse(d_real$male == 1, "Male", "Female"),
+                     levels = c("Female", "Male"))
+d_real$sex_id <- as.integer(d_real$sex)
+d_real$male <- NULL
+d_real$age <- d_real$age * 12  # Convert to months
+d_real$source <- "Real (Howell1)"
+d_sim$source <- "Synthetic"
 
 # ---- Visualize Synthetic Data ----
 # Plot your synthetic data to verify it looks reasonable
 # Separate by sex to see the confounding structure
+# Include real data for comparison
+
+# Combine datasets for plotting
+d_combined <- rbind(
+  d_sim[, c("age", "sex", "height", "weight", "source")],
+  d_real[, c("age", "sex", "height", "weight", "source")]
+)
 
 # Age vs Height
-p1 <- ggplot(d_sim, aes(x = age, y = height, color = sex)) +
+p1 <- ggplot(d_combined, aes(x = age, y = height, color = sex, shape = source)) +
   geom_point(alpha = 0.6) +
-  geom_smooth(method = "lm", se = FALSE) +
+  geom_smooth(aes(linetype = source), method = "lm", se = FALSE) +
   labs(title = "Age → Height relationship",
-       x = "Age (months)", y = "Height (cm)", color = "Sex") +
+       subtitle = "Comparing synthetic data (circles) to real Howell data (triangles)",
+       x = "Age (months)", y = "Height (cm)",
+       color = "Sex", shape = "Data", linetype = "Data") +
   theme_minimal()
 
 # Weight vs Height
-p2 <- ggplot(d_sim, aes(x = height, y = weight, color = sex)) +
+p2 <- ggplot(d_combined, aes(x = height, y = weight, color = sex, shape = source)) +
   geom_point(alpha = 0.6) +
-  geom_smooth(method = "lm", se = FALSE) +
+  geom_smooth(aes(linetype = source), method = "lm", se = FALSE) +
   labs(title = "Height → Weight relationship",
-       x = "Height (cm)", y = "Weight (kg)", color = "Sex") +
+       subtitle = "Comparing synthetic data (circles) to real Howell data (triangles)",
+       x = "Height (cm)", y = "Weight (kg)",
+       color = "Sex", shape = "Data", linetype = "Data") +
   theme_minimal()
 
 # Age vs Weight
-p3 <- ggplot(d_sim, aes(x = age, y = weight, color = sex)) +
+p3 <- ggplot(d_combined, aes(x = age, y = weight, color = sex, shape = source)) +
   geom_point(alpha = 0.6) +
-  geom_smooth(method = "lm", se = FALSE) +
+  geom_smooth(aes(linetype = source), method = "lm", se = FALSE) +
   labs(title = "Age → Weight relationship",
-       x = "Age (months)", y = "Weight (kg)", color = "Sex") +
+       subtitle = "Comparing synthetic data (circles) to real Howell data (triangles)",
+       x = "Age (months)", y = "Weight (kg)",
+       color = "Sex", shape = "Data", linetype = "Data") +
   theme_minimal()
 
 # Combined plot
-(p1 | p2) / p3
+print((p1 | p2) / p3)
 
 # Density plots to check distributions
-p4 <- ggplot(d_sim, aes(x = weight, fill = sex)) +
-  geom_density(alpha = 0.5) +
-  labs(title = "Weight distribution by sex", x = "Weight (kg)", fill = "Sex") +
+p4 <- ggplot(d_combined, aes(x = weight, fill = sex, linetype = source)) +
+  geom_density(alpha = 0.3) +
+  labs(title = "Weight distribution by sex",
+       subtitle = "Solid = Synthetic, Dashed = Real (Howell1)",
+       x = "Weight (kg)", fill = "Sex", linetype = "Data") +
   theme_minimal()
 
-p5 <- ggplot(d_sim, aes(x = height, fill = sex)) +
-  geom_density(alpha = 0.5) +
-  labs(title = "Height distribution by sex", x = "Height (cm)", fill = "Sex") +
+p5 <- ggplot(d_combined, aes(x = height, fill = sex, linetype = source)) +
+  geom_density(alpha = 0.3) +
+  labs(title = "Height distribution by sex",
+       subtitle = "Solid = Synthetic, Dashed = Real (Howell1)",
+       x = "Height (cm)", fill = "Sex", linetype = "Data") +
   theme_minimal()
 
-p4 | p5
+print(p4 | p5)
