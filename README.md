@@ -82,8 +82,8 @@ There is a set of recorded lectures from 2023 that might also be of use, either 
 | 03 | 20 January | Beginner | <[Geocentric Models](https://www.youtube.com/watch?v=JX_UyidsQNg)> | Chapter 4
 |    | 23 January | Experienced | <[Correlated Features](https://www.youtube.com/watch?v=MBhjDMXtANE)> | Chapter 13 
 | 04 | 27 January | Beginner | <[Categories & Causes](https://www.youtube.com/watch?v=GIdwLrW2nNo)> | Chapter 4
-|    | 30 January | Experienced | Social Networks | Chapter 14 
-| 05 | 3 February | Beginner | Elemental Confounds | Chapter 5
+|    | 30 January | Experienced | <[Group-level Confounds / Social Networks I](https://www.youtube.com/watch?v=XNNcN8sU8us)> | Chapter 14 
+| 05 | 3 February | Beginner | <[Estimands and Estiplans](https://www.youtube.com/watch?v=sYE8a95x-0E)> | Chapters 4 and 5
 |    | 6 February | Experienced | Gaussian Processes | Chapter 14 
 | 06 | 10 February | Beginner | Good and Bad Controls | Chapter 6
 |    | 13 February | Experienced | Measurement Error | Chapter 15 
