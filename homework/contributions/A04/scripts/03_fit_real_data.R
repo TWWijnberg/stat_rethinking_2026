@@ -17,18 +17,29 @@ ggplot(Howell1, aes(x = age, y = height)) +
     labs(x = "Age", y = "Height", title = "Age vs Height - Full Dataset")
 
 # ---- Filter to Children ----
-# Growth stops around 25 years old
-# Model growth up to 18 years old
-children <- Howell1 %>% filter(age <= 18)
+# Model growth up to 13 years old
+# Load Howell1 dataset
+children <- Howell1
 
-ggplot(children, aes(x = age, y = height)) +
+# Filter for children younger than 13 years old
+children <- children[children$age < 13, ]
+children$sex <- factor(ifelse(children$male == 1, "Male", "Female"),
+                levels = c("Female", "Male"))  # Female=1, Male=2
+children$sex_id <- as.integer(children$sex)  # Create index variable for ulam
+children$male <- NULL  # Remove the original male column
+
+# Convert age from years to months
+children$age <- children$age * 12
+
+ggplot(children, aes(x = age, y = height, color = sex)) +
     geom_point() +
-    xlim(0, 20) +
+    xlim(0, 13*12) +
     ylim(0, 200) +
-    labs(x = "Age", y = "Height", title = "Age vs Height - Children Only")
+    labs(x = "Age", y = "Height", color = "Sex",
+         title = "Age vs Height - Children Only")
 
 # ---- Fit Model ----
-fitted_model <- quap(height_model, data = list(age = children$age, height = children$height))
+fitted_model <- ulam(height_model, data = children)
 
 # ---- Extract Prior and Posterior ----
 prior <- extract.prior(fitted_model, n = 100)
@@ -40,7 +51,7 @@ age_seq <- seq(0, 19, length.out = 50)
 mu <- link(fitted_model, data = data.frame(age = age_seq))
 mu_mean <- apply(mu, 2, mean)
 
-posterior_pred <- sim(fitted_model, data = list(age = children$age))
+posterior_pred <- sim(fitted_model, data = children)
 
 plot(children$age, children$height,
      xlab = "Age", ylab = "Height",
@@ -79,3 +90,44 @@ hist(post$a)
 # Botswana community (August 1967 - May 1969)
 summary(fitted_model)
 plot(fitted_model)
+
+# ---- Total Causal Effect of Age on Weight ----
+# Calculate the total effect of age on weight using posterior samples
+# Total effect = Direct effect + Indirect effect through height
+# Direct: b_weight_age (Age -> Weight)
+# Indirect: b_height_age * b_weight_height (Age -> Height -> Weight)
+
+# Extract posterior samples (already done at line 46, but refresh for clarity)
+post <- extract.samples(fitted_model, n = 10000)
+
+# Calculate total effect for each posterior sample
+# Effect is in kg per month of age
+total_effect_age <- post$b_weight_age + (post$b_height_age * post$b_weight_height)
+
+# Summary statistics
+cat("\n=== Total Causal Effect of Age on Weight ===\n")
+cat(sprintf("Mean total effect: %.3f kg/month (%.2f kg/year)\n",
+            mean(total_effect_age), mean(total_effect_age) * 12))
+cat(sprintf("89%% credible interval: [%.3f, %.3f] kg/month\n",
+            quantile(total_effect_age, 0.055),
+            quantile(total_effect_age, 0.945)))
+
+# Break down into components
+cat("\n--- Effect Decomposition ---\n")
+cat(sprintf("Direct effect (b_weight_age): %.3f kg/month\n",
+            mean(post$b_weight_age)))
+cat(sprintf("Indirect effect (b_height_age × b_weight_height): %.3f kg/month\n",
+            mean(post$b_height_age * post$b_weight_height)))
+cat(sprintf("Proportion through height: %.1f%%\n",
+            100 * mean(post$b_height_age * post$b_weight_height) / mean(total_effect_age)))
+
+# Visualize the posterior distribution
+hist(total_effect_age,
+     breaks = 50,
+     main = "Posterior Distribution: Total Effect of Age on Weight",
+     xlab = "Effect (kg per month)",
+     col = "skyblue",
+     border = "white")
+abline(v = mean(total_effect_age), col = "red", lwd = 2, lty = 2)
+abline(v = quantile(total_effect_age, c(0.055, 0.945)),
+       col = "red", lwd = 1, lty = 3)
