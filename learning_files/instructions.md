@@ -204,6 +204,71 @@ prior <- normal(0, 1)
 prior <- normal(0, 1)
 ```
 
+# Simulation & Synthetic Data
+
+## DAG-Based Simulation
+
+When validating models, generate synthetic data that follows your causal structure:
+
+```r
+# Create a simulation function that respects causal ordering
+# Variables with no parents (exogenous) come first
+# Then generate downstream variables as functions of their parents
+
+sim_children <- function(n = 200,
+                        h_intercept = 50, h_age = 0.5, h_sex = 5, h_sigma = 5,
+                        w_intercept = 3, w_height = 0.5, w_age = 0.05,
+                        w_sex = 2, w_sigma = 2) {
+  # Exogenous variables (no parents in DAG)
+  age <- runif(n, 0, 156)
+  sex <- factor(sample(c("Male", "Female"), n, replace = TRUE),
+                levels = c("Male", "Female"))
+
+  # Height = f(Age, Sex) - has Age and Sex as parents
+  height <- h_intercept + h_age * age + h_sex * (sex == "Male") +
+    rnorm(n, 0, h_sigma)
+
+  # Weight = f(Height, Age, Sex) - has all three as parents
+  weight <- w_intercept + w_height * height + w_age * age +
+    w_sex * (sex == "Male") + rnorm(n, 0, w_sigma)
+
+  data.frame(age = age, sex = sex, height = height, weight = weight)
+}
+```
+
+## Working with Factors in Simulations
+
+Use factors directly instead of numeric codes:
+
+```r
+# Generate factors from the start
+sex <- factor(sample(c("Male", "Female"), n, replace = TRUE),
+              levels = c("Male", "Female"))
+
+# Use logical comparisons in equations (TRUE/FALSE converts to 1/0)
+effect <- beta_sex * (sex == "Male")
+```
+
+## Combining Plots with Patchwork
+
+Visualize multiple relationships efficiently:
+
+```r
+library(patchwork)
+
+p1 <- ggplot(data, aes(x = age, y = height, color = sex)) +
+  geom_point() + geom_smooth(method = "lm")
+
+p2 <- ggplot(data, aes(x = height, y = weight, color = sex)) +
+  geom_point() + geom_smooth(method = "lm")
+
+p3 <- ggplot(data, aes(x = age, y = weight, color = sex)) +
+  geom_point() + geom_smooth(method = "lm")
+
+# Arrange plots: | = side by side, / = stacked
+(p1 | p2) / p3
+```
+
 # Testing & Validation
 
 ## Sanity Checks
