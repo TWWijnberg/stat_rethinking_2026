@@ -66,13 +66,13 @@ Don't immediately give the answer unless I explicitly ask for it or we've alread
 
 ## Technical Context
 
-**Current learning project:** Statistical Rethinking 2026 course (Beginner section). Completed A01, A02, A03. Next: A04.
+**Current learning project:** Statistical Rethinking 2026 course (Beginner section). Completed A01, A02, A03, A04. Next: A05.
 
 **R environment:** Using VSCode with R extension. Learning renv for package management.
 
 **Development goals:** Writing more modular code, using git effectively, understanding when/how to test, structuring projects properly.
 
-**Statistics background:** Solid frequentist foundation. Building Bayesian inference skills—can articulate posterior vs posterior predictive, understands role of priors. Learning causal inference with DAGs—understands backdoor paths, confounding, and the distinction between causal and predictive modeling.
+**Statistics background:** Solid frequentist foundation. Building Bayesian inference skills—can articulate posterior vs posterior predictive, understands role of priors. Learning causal inference with DAGs—understands backdoor paths, confounding, and the distinction between causal and predictive modeling. Can compute total causal effects and validate models through parameter recovery.
 
 ---
 
@@ -83,6 +83,10 @@ Don't immediately give the answer unless I explicitly ask for it or we've alread
 **Prefers minimal process overhead.** Detailed workflow documents feel overwhelming. When starting a session, cut to the essentials: what's the task, what concepts apply, start coding. Add structure only when it solves a felt problem.
 
 **Responds well to conceptual checkpoints.** Asking "what's the difference between X and Y?" before coding helps ensure understanding. Keep doing this, but keep it brief.
+
+**Values learning from failure.** When code fails (e.g., quap with multivariate models), explaining why it fails and what that reveals about the model structure is valuable. Don't just provide the fix—explain what went wrong.
+
+**Builds mental models through contrast.** Comparing two approaches (index vs indicator coding, quap vs ulam) helps solidify understanding better than explaining one approach in isolation.
 
 ---
 

@@ -420,6 +420,8 @@ How to know you're advancing:
 - [x] Can draw a DAG for a research question and identify confounds *(A03: built height/weight/age/sex/nutrition DAG, identified confounds; A04: built Age/Sex→Height→Weight DAG)*
 - [x] Can interpret posterior distributions and explain uncertainty *(A02: articulated posterior vs posterior predictive, understood prior influence)*
 - [x] Can generate synthetic data following a DAG structure *(A04: created sim_children() function with causal ordering)*
+- [x] Can validate models using parameter recovery on synthetic data *(A04: generated synthetic data, fit model, verified true parameters within 89% CI)*
+- [x] Can compute total causal effects from DAGs using posterior samples *(A04: calculated total effect = direct + indirect, quantified uncertainty)*
 - [ ] Can diagnose MCMC issues and know how to address them
 - [ ] Can build a multilevel model and explain why partial pooling helps
 
@@ -448,4 +450,4 @@ How to know you're advancing:
 
 ---
 
-*Document version: 1.3 | Updated: 2026-01-31 | A04 Step 1 complete: DAG creation, synthetic data generation, and visualization*
+*Document version: 1.4 | Updated: 2026-02-03 | A04 complete: Full causal inference workflow with parameter recovery and total effect estimation*

@@ -380,5 +380,63 @@ git config --global core.autocrlf true
 
 ---
 
-*Document version: 1.1 | Last updated: January 2026*
+## Working with Factors and Index Variables (A04 Lesson)
+
+Factors are R's way of representing categorical variables. When modeling with Stan/ulam, you need to convert factors to integer indices.
+
+### Creating Factors with Explicit Levels
+
+**Why explicit levels matter:** The order of factor levels determines the integer index values.
+
+```r
+# Bad: Unpredictable level order
+d$sex <- factor(d$sex)  # Alphabetical by default: Female=1, Male=2 (luck!)
+
+# Good: Explicit control over level order
+d$sex <- factor(d$sex, levels = c("Female", "Male"))
+# Now you know for certain: Female=1, Male=2
+```
+
+### Converting Factors to Integer Indices
+
+```r
+# Create integer index for Stan
+d$sex_id <- as.integer(d$sex)
+# sex_id = 1 for Female, sex_id = 2 for Male
+
+# Verify the mapping
+table(d$sex, d$sex_id)
+```
+
+### Using Index Variables in Models
+
+In Stan/ulam, use the index to select from parameter vectors:
+
+```r
+# Statistical model with index coding
+ulam(alist(
+  height ~ dnorm(mu, sigma),
+  mu <- a[sex_id] + b_age * age,
+  vector[2]:a ~ dnorm(60, 10)  # a[1] for Female, a[2] for Male
+), data = d)
+```
+
+### Common Pitfall: Factor vs Character
+
+```r
+# Character variables don't have inherent ordering
+d$sex <- c("Female", "Male", "Female")  # Character
+
+# Convert to factor first, then to integer
+d$sex <- factor(d$sex, levels = c("Female", "Male"))
+d$sex_id <- as.integer(d$sex)
+
+# Shortcut: as.integer(factor(...)) in one step
+d$sex_id <- as.integer(factor(d$sex, levels = c("Female", "Male")))
+```
+
+---
+
+*Document version: 1.2 | Last updated: 2026-02-03*
 *Configured for: Windows with VSCode, R, cmdstanr, renv*
+*Added: Factor handling for Stan/ulam modeling*

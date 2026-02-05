@@ -43,7 +43,7 @@ homework/contributions/A04/
 └── docs/           # Your notes and reflections
 ```
 
-**Script workflow** (following Statistical Rethinking methodology):
+**Script workflow** (following Statistical Rethinking causal inference methodology):
 - **00_setup.R**: Libraries, options, helper functions
 - **01_scientific_model.R**: DAG definition, synthetic data generation, initial visualizations
 - **02_prior_checking.R**: Statistical model definition, prior predictive simulation, fit on synthetic data
@@ -56,6 +56,13 @@ homework/contributions/A04/
 - **Each script sources the previous** creating a reproducible pipeline
 - **DAG comes first** - makes causal assumptions explicit before statistical modeling
 - **Separating outputs** means you can regenerate everything by re-running scripts
+
+**Causal Inference Workflow (McElreath's 5-step process)**:
+1. **Define scientific model with DAG**: Make causal assumptions explicit, identify confounds
+2. **Generate synthetic data**: Create data from known parameters following DAG structure
+3. **Prior predictive simulation**: Check if priors produce reasonable predictions
+4. **Fit model on synthetic data**: Verify parameter recovery - can model find known parameters?
+5. **Fit real data**: Only after validation, fit model to actual data and compute causal effects
 
 ---
 
@@ -175,5 +182,5 @@ Don't update for the sake of updating. Update when you have something real to ca
 
 ---
 
-*Version: 2.1 | Updated: 2026-01-29 | Added scientific workflow structure and causal inference concepts*
+*Version: 2.2 | Updated: 2026-02-03 | Added McElreath's 5-step causal inference workflow*
 *This document evolves based on what actually works, not predictions about what should work*

@@ -73,41 +73,41 @@ true_params <- list(
 sim_children <- function(n = 200, params = true_params) {
   # Exogenous variables (no parents in DAG)
   age <- runif(n, 0, 156)  # age in months (0 to 13 years)
-  sex <- factor(sample(c("Female", "Male"), n, replace = TRUE),
-                levels = c("Female", "Male"))
-  sex_id <- as.integer(sex)  # 1 = Female, 2 = Male
+  sex <- factor(sample(c(1, 2), n, replace = TRUE),
+                labels = c("Female", "Male"))
 
   # Height = f(Age, Sex)
   # Using index coding: params$a_height[sex_id]
-  height <- params$a_height[sex_id] +
+  height <- params$a_height[sex] +
     params$b_height_age * age +
     rnorm(n, 0, params$sigma_height)
 
   # Weight = f(Height, Age, Sex)
   # Using index coding: params$a_weight[sex_id]
-  weight <- params$a_weight[sex_id] +
+  weight <- params$a_weight[sex] +
     params$b_weight_height * height +
     params$b_weight_age * age +
     rnorm(n, 0, params$sigma_weight)
 
-  data.frame(age = age, sex = sex, sex_id = sex_id,
+  data.frame(age = age, sex = sex,
              height = height, weight = weight)
 }
 
 # Generate synthetic data
 d_sim <- sim_children(n = 200, params = true_params)
+d_sim <- d_sim |>  mutate(source = "Synthetic")
 
 # ---- Load Real Data for Comparison ----
 # Load Howell1 dataset and prepare it the same way as synthetic data
 data(Howell1)
-d_real <- Howell1[Howell1$age < 13, ]
-d_real$sex <- factor(ifelse(d_real$male == 1, "Male", "Female"),
-                     levels = c("Female", "Male"))
-d_real$sex_id <- as.integer(d_real$sex)
-d_real$male <- NULL
-d_real$age <- d_real$age * 12  # Convert to months
-d_real$source <- "Real (Howell1)"
-d_sim$source <- "Synthetic"
+d_real <- Howell1 |>
+  filter(age < 13) |>
+  mutate(
+    sex = factor(male + 1, labels = c("Female", "Male")),
+    age = age * 12,
+    source = "Real (Howell1)"
+  ) |>
+  select(-male)
 
 # ---- Visualize Synthetic Data ----
 # Plot your synthetic data to verify it looks reasonable

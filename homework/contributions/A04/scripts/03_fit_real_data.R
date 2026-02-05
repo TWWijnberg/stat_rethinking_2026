@@ -89,7 +89,7 @@ hist(post$a)
 # This might be due to malnutrition - data is from a
 # Botswana community (August 1967 - May 1969)
 summary(fitted_model)
-plot(fitted_model)
+plot(fitted_model, depth = 2)
 
 # ---- Total Causal Effect of Age on Weight ----
 # Calculate the total effect of age on weight using posterior samples
