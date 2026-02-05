@@ -45,62 +45,35 @@ prior_params <- list(
 # The if(!exists()) check prevents regeneration on subsequent runs
 
 # Model for quap: uses indicator variable (simpler, faster for development)
-# Uses sex_male where 0 = Female, 1 = Male
-if (!exists("height_model_quap")) {
-  height_model_quap <- eval(bquote(alist(
+# Uses sex_male where 1 = Female, 2 = Male
+  height_model <- eval(bquote(alist(
     height ~ dnorm(mu_height, sigma_height),
-        mu_height <- a_height + b_height_age * age + b_height_sex * sex_male,
-        # Baseline (Female) intercept
-        a_height ~ dnorm(.(prior_params$a_height_mean), .(prior_params$a_height_sd)),
+        mu_height <- a_height[sex] + b_height_age * age,
+        a_height[sex] ~ dnorm(.(prior_params$a_height_mean), .(prior_params$a_height_sd)),
         b_height_age ~ dunif(.(prior_params$b_height_age_min),
                              .(prior_params$b_height_age_max)),
-        # Male effect: difference from female baseline
-        b_height_sex ~ dnorm(2.5, 5),  # Expected ~5cm difference
         sigma_height ~ dunif(0, .(prior_params$sigma_height_max)),
     # Weight model
     weight ~ dnorm(mu_weight, sigma_weight),
-        mu_weight <- a_weight + b_weight_height * height +
-                     b_weight_age * age + b_weight_sex * sex_male,
-        a_weight ~ dunif(.(prior_params$a_weight_min),
+        mu_weight <- a_weight[sex] + b_weight_height * height +
+                     b_weight_age[sex] * age,
+        a_weight[sex] ~ dunif(.(prior_params$a_weight_min),
                          .(prior_params$a_weight_max)),
         b_weight_height ~ dunif(.(prior_params$b_weight_height_min),
                                 .(prior_params$b_weight_height_max)),
-        b_weight_age ~ dunif(.(prior_params$b_weight_age_min),
+        b_weight_age[sex] ~ dunif(.(prior_params$b_weight_age_min),
                              .(prior_params$b_weight_age_max)),
-        # Male effect: difference from female baseline
-        b_weight_sex ~ dnorm(1, 3),  # Expected ~2kg difference
         sigma_weight ~ dunif(0, .(prior_params$sigma_weight_max))
   )))
-}
 
-# Model for ulam: uses index coding (Stan-optimized, for final results)
-# Uses sex_id where 1 = Female, 2 = Male
-if (!exists("height_model_ulam")) {
-  height_model_ulam <- eval(bquote(alist(
-    height ~ dnorm(mu_height, sigma_height),
-        mu_height <- a_height[sex_id] + b_height_age * age,
-        # Sex-specific intercepts: birth height by sex (vector of length 2)
-        vector[2]:a_height ~ dnorm(.(prior_params$a_height_mean),
-                                    .(prior_params$a_height_sd)),
-        b_height_age ~ dunif(.(prior_params$b_height_age_min),
-                             .(prior_params$b_height_age_max)),
-        sigma_height ~ dunif(0, .(prior_params$sigma_height_max)),
-    # Weight model
+age_on_weight_model <- alist(
     weight ~ dnorm(mu_weight, sigma_weight),
-        mu_weight <-
-            a_weight[sex_id] +
-            b_weight_height * height +
-            b_weight_age * age,
-        # Sex-specific intercepts: base weight by sex (vector of length 2)
-        vector[2]:a_weight ~ dunif(.(prior_params$a_weight_min),
-                                    .(prior_params$a_weight_max)),
-        b_weight_height ~ dunif(.(prior_params$b_weight_height_min),
-                                .(prior_params$b_weight_height_max)),
-        b_weight_age ~ dunif(.(prior_params$b_weight_age_min),
-                             .(prior_params$b_weight_age_max)),
-        sigma_weight ~ dunif(0, .(prior_params$sigma_weight_max))
-  )))
-}
+        mu_weight <- a_weight[sex] + b_weight_age * weight,
+        a_weight[sex] ~ dnorm(0,1),
+        b_weight_age ~ dunif(0.1,0.3),
+        sigma_weight ~ dunif(0, 2)
+  )
+
 
 # ---- Prior Predictive Simulation ----
 # Generate predictions from the prior to see if they make sense
@@ -109,8 +82,7 @@ n_lines <- 50  # Number of prior regression lines to plot
 
 # Sample ages and sexes
 age_sample <- runif(n_sample, 0, 19 * 12)  # Age in months
-sex_sample <- sample(c("Female", "Male"), n_sample, replace = TRUE)
-sex_id_sample <- as.integer(factor(sex_sample, levels = c("Female", "Male")))
+sex_sample <- factor(sample(c(1, 2), n_sample, replace = TRUE),labels = c("Female", "Male"))
 
 # Sample from height priors (using prior_params)
 # For index coding: sample sex-specific intercepts
@@ -120,7 +92,7 @@ b_height_age_sample <- runif(n_sample, prior_params$b_height_age_min, prior_para
 sigma_height_sample <- runif(n_sample, 0, prior_params$sigma_height_max)
 
 # Select appropriate intercept based on sex_id
-a_height_sample <- ifelse(sex_id_sample == 1, a_height_female_sample, a_height_male_sample)
+a_height_sample <- cbind(a_height_female_sample,a_height_male_sample)[sex_sample]
 
 # Generate height predictions
 mu_height_sample <- a_height_sample + b_height_age_sample * age_sample
@@ -134,8 +106,8 @@ b_weight_height_sample <- runif(n_sample, prior_params$b_weight_height_min, prio
 b_weight_age_sample <- runif(n_sample, prior_params$b_weight_age_min, prior_params$b_weight_age_max)
 sigma_weight_sample <- runif(n_sample, 0, prior_params$sigma_weight_max)
 
-# Select appropriate intercept based on sex_id
-a_weight_sample <- ifelse(sex_id_sample == 1, a_weight_female_sample, a_weight_male_sample)
+# Select appropriate intercept based on sex
+a_weight_sample <- cbind(a_weight_female_sample,a_weight_male_sample)[sex_sample]
 
 # Generate weight predictions
 mu_weight_sample <- a_weight_sample +
@@ -309,17 +281,9 @@ print(p5)
 print(p6)
 
 # ---- Fit Model on Synthetic Data ----
-# Toggle between fast development (quap) and full posterior (ulam)
-# NOTE: quap struggles with multivariate models where height is both
-# an outcome and a predictor. Use ulam for reliable fitting.
-DEV_MODE <- FALSE  # Set to FALSE for final run with ulam
-
 # Prepare data for model fitting (only include necessary variables)
 # This prevents warnings about unused character/factor variables
-d_fit <- d_sim[, c("age", "sex_id", "height", "weight")]
-d_fit$sex_male <- as.integer(d_sim$sex == "Male")
-
-if (DEV_MODE) {
+d_fit <- d_sim[, c("age", "sex", "height", "weight")]
   cat("\n=== Fitting with quap (fast approximation) ===\n")
   # Provide explicit start values to avoid non-finite likelihoods
   # Use middle of prior ranges and reasonable values given the data
@@ -334,11 +298,9 @@ if (DEV_MODE) {
     b_weight_sex = 1,          # Expected male-female difference
     sigma_weight = 5           # Middle of prior range
   )
-  fitted_model <- quap(height_model_quap, data = d_fit, start = start_values)
-} else {
-  cat("\n=== Fitting with ulam (full MCMC) ===\n")
-  fitted_model <- ulam(height_model_ulam, data = d_fit)
-}
+fitted_model <- quap(age_on_weight_model, data = d_fit)
+
+plot(d_fit$age, d_fit$weight)
 
 # Display parameter estimates
 cat("\nParameter estimates:\n")
