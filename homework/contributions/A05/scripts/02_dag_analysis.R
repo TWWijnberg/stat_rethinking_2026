@@ -110,10 +110,11 @@ prior_params <- list(
 # ============================================================================
 
 # Model conditioning on Age only (not Height) to get TOTAL effect
+# Note: sex is a factor with integer levels (1=Female, 2=Male) - rethinking style
 weight_model <- alist(
   weight ~ dnorm(mu, sigma),
-  mu <- a[sex_id] + b_age * age,
-  vector[2]:a ~ dnorm(5, 10),     # Sex-specific intercepts
+  mu <- a[sex] + b_age * age,
+  a[sex] ~ dnorm(5, 10),          # Sex-specific intercepts
   b_age ~ dunif(0, 0.3),          # kg per month
   sigma ~ dunif(0, 15)
 )

@@ -5,6 +5,15 @@
 source(here::here("homework", "contributions", "A05", "scripts", "02_dag_analysis.R"))
 
 # ============================================================================
+# Setup output directory
+# ============================================================================
+
+output_dir <- here::here("homework", "contributions", "A05", "outputs", "figures")
+if (!dir.exists(output_dir)) {
+  dir.create(output_dir, recursive = TRUE)
+}
+
+# ============================================================================
 # STEP 1: Generate Synthetic Data
 # ============================================================================
 
@@ -23,25 +32,27 @@ p1 <- ggplot(d_syn, aes(x = age, y = weight, color = sex)) +
   geom_point(alpha = 0.6) +
   labs(title = "Synthetic Data: Age vs Weight") +
   theme_minimal()
-print(p1)
+ggsave(file.path(output_dir, "01_synthetic_data.png"), p1, width = 8, height = 6)
+cat("Saved: 01_synthetic_data.png\n")
 
 # ============================================================================
 # STEP 2: Fit Model
 # ============================================================================
 
-# Prepare data for ulam (only include required columns)
+# Prepare data for ulam
+# Note: sex is a factor with integer levels (1=Female, 2=Male)
 d_fit <- list(
   weight = d_syn$weight,
   age = d_syn$age,
-  sex_id = d_syn$sex_id
+  sex = as.integer(d_syn$sex)
 )
 
 # Fit the model - KEEP THIS EXPLICIT so you can see what's being fit
 fit_syn <- ulam(
   alist(
     weight ~ dnorm(mu, sigma),
-    mu <- a[sex_id] + b_age * age,
-    vector[2]:a ~ dnorm(5, 10),
+    mu <- a[sex] + b_age * age,
+    a[sex] ~ dnorm(5, 10),
     b_age ~ dunif(0, 0.3),
     sigma ~ dunif(0, 15)
   ),
@@ -59,7 +70,10 @@ cat("\n=== MCMC Diagnostics ===\n")
 print(precis(fit_syn, depth = 2))
 
 # Check trace plots
+png(file.path(output_dir, "02_synthetic_traceplot.png"), width = 800, height = 600)
 traceplot(fit_syn)
+dev.off()
+cat("Saved: 02_synthetic_traceplot.png\n")
 
 # ============================================================================
 # STEP 4: Parameter Recovery
@@ -89,7 +103,8 @@ cat("Expected b_age (total): ", round(true_for_plot["b_age"], 3), "\n")
 # Caterpillar plot with true values
 p2 <- plot_caterpillar(fit_syn, true_values = true_for_plot,
                        title = "Parameter Recovery: Synthetic Data")
-print(p2)
+ggsave(file.path(output_dir, "03_synthetic_caterpillar.png"), p2, width = 8, height = 6)
+cat("Saved: 03_synthetic_caterpillar.png\n")
 
 # ============================================================================
 # STEP 5: Posterior Predictive Check
@@ -97,7 +112,8 @@ print(p2)
 
 p3 <- plot_predictions(d_syn, fit_syn, outcome = "weight",
                        title = "Posterior Predictive: Synthetic Data")
-print(p3)
+ggsave(file.path(output_dir, "04_synthetic_posterior_predictive.png"), p3, width = 8, height = 6)
+cat("Saved: 04_synthetic_posterior_predictive.png\n")
 
 # ============================================================================
 # STEP 6: Estimate Total Effect of Sex
@@ -121,6 +137,7 @@ in_ci <- true_params$total_sex_effect >= quantile(total_effect, 0.055) &
 cat(sprintf("True value in 89%% CI: %s\n", ifelse(in_ci, "YES", "NO")))
 
 # Visualize posterior
+png(file.path(output_dir, "05_synthetic_total_effect.png"), width = 800, height = 600)
 hist(total_effect, breaks = 30, col = "skyblue", border = "white",
      main = "Posterior: Total Effect of Sex on Weight",
      xlab = "Effect (kg, Male - Female)")
@@ -128,5 +145,7 @@ abline(v = true_params$total_sex_effect, col = "red", lwd = 2, lty = 2)
 abline(v = mean(total_effect), col = "blue", lwd = 2)
 legend("topright", c("True value", "Posterior mean"),
        col = c("red", "blue"), lty = c(2, 1), lwd = 2)
+dev.off()
+cat("Saved: 05_synthetic_total_effect.png\n")
 
 cat("\nSynthetic analysis complete. Model validated.\n")

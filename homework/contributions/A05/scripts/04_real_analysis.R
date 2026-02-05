@@ -5,6 +5,15 @@
 source(here::here("homework", "contributions", "A05", "scripts", "02_dag_analysis.R"))
 
 # ============================================================================
+# Setup output directory
+# ============================================================================
+
+output_dir <- here::here("homework", "contributions", "A05", "outputs", "figures")
+if (!dir.exists(output_dir)) {
+  dir.create(output_dir, recursive = TRUE)
+}
+
+# ============================================================================
 # STEP 1: Load and Prepare Data
 # ============================================================================
 
@@ -32,24 +41,27 @@ p1 <- ggplot(d_real, aes(x = age, y = weight, color = sex)) +
   geom_point(alpha = 0.6) +
   labs(title = "Howell1 Data: Age vs Weight (Children)") +
   theme_minimal()
-print(p1)
+ggsave(file.path(output_dir, "06_real_data.png"), p1, width = 8, height = 6)
+cat("Saved: 06_real_data.png\n")
 
 # ============================================================================
 # STEP 2: Fit Model
 # ============================================================================
 
+# Prepare data for ulam
+# Note: sex is a factor with integer levels (1=Female, 2=Male)
 d_fit <- list(
   weight = d_real$weight,
   age = d_real$age,
-  sex_id = d_real$sex_id
+  sex = as.integer(d_real$sex)
 )
 
 # Fit the same model as synthetic analysis
 fit_real <- ulam(
   alist(
     weight ~ dnorm(mu, sigma),
-    mu <- a[sex_id] + b_age * age,
-    vector[2]:a ~ dnorm(5, 10),
+    mu <- a[sex] + b_age * age,
+    a[sex] ~ dnorm(5, 10),
     b_age ~ dunif(0, 0.3),
     sigma ~ dunif(0, 15)
   ),
@@ -66,7 +78,10 @@ fit_real <- ulam(
 cat("\n=== MCMC Diagnostics ===\n")
 print(precis(fit_real, depth = 2))
 
+png(file.path(output_dir, "07_real_traceplot.png"), width = 800, height = 600)
 traceplot(fit_real)
+dev.off()
+cat("Saved: 07_real_traceplot.png\n")
 
 # ============================================================================
 # STEP 4: Posterior Predictive Check
@@ -74,7 +89,8 @@ traceplot(fit_real)
 
 p2 <- plot_predictions(d_real, fit_real, outcome = "weight",
                        title = "Posterior Predictive: Howell1 Children")
-print(p2)
+ggsave(file.path(output_dir, "08_real_posterior_predictive.png"), p2, width = 8, height = 6)
+cat("Saved: 08_real_posterior_predictive.png\n")
 
 # ============================================================================
 # STEP 5: Estimate Total Causal Effect of Sex
@@ -108,11 +124,14 @@ cat("  through height (boys are taller, taller children weigh more).\n")
 cat("\n")
 
 # Visualize posterior
+png(file.path(output_dir, "09_real_total_effect.png"), width = 800, height = 600)
 hist(total_effect, breaks = 30, col = "skyblue", border = "white",
      main = "Posterior: Total Effect of Sex on Weight (Howell1)",
      xlab = "Effect (kg, Male - Female)")
 abline(v = mean(total_effect), col = "blue", lwd = 2)
 abline(v = quantile(total_effect, c(0.055, 0.945)), col = "blue", lwd = 1, lty = 2)
+dev.off()
+cat("Saved: 09_real_total_effect.png\n")
 
 # ============================================================================
 # STEP 6: Compare to Effect Holding Height Constant (Optional)
@@ -123,6 +142,6 @@ abline(v = quantile(total_effect, c(0.055, 0.945)), col = "blue", lwd = 1, lty =
 
 cat("\n=== Comparison: What if we conditioned on height? ===\n")
 cat("(This would give DIRECT effect only, blocking indirect path)\n")
-cat("Not computed here - see weight_model_direct in 02_dag_analysis.R\n")
+cat("Not computed here - would require adding height to the model.\n")
 
 cat("\nReal data analysis complete.\n")

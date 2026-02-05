@@ -11,19 +11,18 @@ prepare_data <- function(data, source = "unknown") {
   d <- data
 
   # Howell1 has 'male' column (0/1), synthetic has 'sex' factor
+  # Rethinking preference: factors with integer levels (1, 2) and descriptive labels
   if ("male" %in% names(d)) {
-    d$sex <- factor(ifelse(d$male == 1, "Male", "Female"),
-                    levels = c("Female", "Male"))
+    d$sex <- factor(d$male + 1, levels = c(1, 2), labels = c("Female", "Male"))
     d$male <- NULL
   }
 
-  # Ensure sex is a factor with correct level order
-  if (!is.factor(d$sex)) {
-    d$sex <- factor(d$sex, levels = c("Female", "Male"))
+  # Ensure sex is a factor with integer levels and correct labels
+  if (!is.factor(d$sex) || !identical(levels(d$sex), c("Female", "Male"))) {
+    # Convert character/other to proper factor
+    sex_int <- ifelse(d$sex == "Male" | d$sex == 2, 2, 1)
+    d$sex <- factor(sex_int, levels = c(1, 2), labels = c("Female", "Male"))
   }
-
-  # Create sex_id for index coding (Female=1, Male=2)
-  d$sex_id <- as.integer(d$sex)
 
   d$source <- source
   return(d)
@@ -38,23 +37,23 @@ sim_children <- function(n = 200, params) {
   # Generate in causal order: Age, Sex -> Height -> Weight
 
   age <- runif(n, 0, 156)  # 0 to 13 years in months
-  sex <- factor(sample(c("Female", "Male"), n, replace = TRUE),
-                levels = c("Female", "Male"))
-  sex_id <- as.integer(sex)
 
-  # Height depends on Age and Sex
-  height <- params$a_height[sex_id] +
+  # Rethinking preference: factors with integer levels (1, 2) and descriptive labels
+  sex_int <- sample(c(1, 2), n, replace = TRUE)
+  sex <- factor(sex_int, levels = c(1, 2), labels = c("Female", "Male"))
+
+  # Height depends on Age and Sex (use integer representation for indexing)
+  height <- params$a_height[sex_int] +
             params$b_height_age * age +
             rnorm(n, 0, params$sigma_height)
 
   # Weight depends on Height, Age, and Sex
-  weight <- params$a_weight[sex_id] +
+  weight <- params$a_weight[sex_int] +
             params$b_weight_height * height +
             params$b_weight_age * age +
             rnorm(n, 0, params$sigma_weight)
 
-  data.frame(age = age, sex = sex, sex_id = sex_id,
-             height = height, weight = weight)
+  data.frame(age = age, sex = sex, height = height, weight = weight)
 }
 
 # ============================================================================
