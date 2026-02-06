@@ -441,11 +441,12 @@ How to know you're advancing:
 
 **AI Collaboration**
 - [ ] Can write prompts that consistently get useful responses
-- [ ] Know when to provide context vs. when to let AI infer
+- [x] Know when to provide context vs. when to let AI infer *(A05: learned to be explicit about scope - "plan only" vs "plan and implement")*
 - [ ] Can switch between tutor and assistant modes deliberately
 - [ ] Use AI to debug effectively by providing good problem descriptions
-- [ ] Have working context documents that improve your interactions
+- [x] Have working context documents that improve your interactions *(A05: updated agent_instructions.md with coding agent patterns)*
+- [x] Understand model selection strategy *(A05: Opus for planning/architecture, Haiku for straightforward implementation; explicit handoffs between models)*
 
 ---
 
-*Document version: 1.3 | Updated: 2026-01-31 | A04 Step 1 complete: DAG creation, synthetic data generation, and visualization*
+*Document version: 1.4 | Updated: 2026-02-05 | A05: Added AI collaboration learnings (model selection, explicit scope)*
