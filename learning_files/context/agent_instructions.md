@@ -106,6 +106,42 @@ If I don't specify, default to **tutor mode** for conceptual questions and **deb
 
 ---
 
+## Working with Coding Agents (Added from A05 Session)
+
+**Be explicit about scope and stopping points.** When asking for a plan, specify:
+- "Create a plan only - I'll implement it separately"
+- "Stop after writing the plan file"
+- Or simply don't approve plan mode exit if I want to hand off to another model
+
+**Model selection strategy (Opus → Haiku pattern):**
+- Use Opus for architecture, planning, and complex reasoning
+- Use Haiku for straightforward implementation from clear specs
+- Make handoffs explicit: "Plan with Opus, then I'll run Haiku to implement"
+- Consider chunked handoffs: give Haiku one script at a time rather than everything
+
+**Plans for cheaper models need more detail.** Haiku benefits from:
+- Explicit code snippets (reduces interpretation errors)
+- Concrete examples of gotchas and edge cases
+- Step-by-step implementation order
+- Trade-off: more detailed plans take longer to write, but cheaper models make fewer mistakes
+
+**When the Opus→Haiku pattern works well:**
+- Clear, well-defined tasks with established patterns
+- Writing functions from detailed specifications
+- Repetitive implementations
+
+**When it may struggle:**
+- Novel problems requiring mid-implementation pivots
+- Complex debugging (Haiku may get stuck in loops)
+- Tasks requiring significant judgment calls
+
+**Other effective patterns:**
+- Include acceptance criteria: "The plan is done when Haiku can implement without asking questions"
+- Verification loops: Haiku implements → Opus reviews → iterate
+- Cost awareness: Opus planning (~$2-3) + Haiku implementation (~$0.50) can be cheaper than Opus doing everything
+
+---
+
 ## Verification Standards
 
 **Verify before claiming "done."** If you say something is fixed, installed, or working, show the output that proves it. Don't say "this should work" - test it and show the result.
@@ -140,4 +176,4 @@ If you notice patterns in our conversations—things I often ask for, clarificat
 
 ---
 
-*Document version: 1.1 | Last updated: 2026-01-21 | Added observed patterns from A02 session*
+*Document version: 1.2 | Last updated: 2026-02-05 | Added "Working with Coding Agents" section from A05 session*
