@@ -84,15 +84,15 @@ There is a set of recorded lectures from 2023 that might also be of use, either 
 | 04 | 27 January | Beginner | <[Categories & Causes](https://www.youtube.com/watch?v=GIdwLrW2nNo)> | Chapter 4
 |    | 30 January | Experienced | <[Group-level Confounds / Social Networks I](https://www.youtube.com/watch?v=XNNcN8sU8us)> | Chapter 14 
 | 05 | 3 February | Beginner | <[Estimands and Estiplans](https://www.youtube.com/watch?v=sYE8a95x-0E)> | Chapters 4 and 5
-|    | 6 February | Experienced | Gaussian Processes | Chapter 14 
-| 06 | 10 February | Beginner | Good and Bad Controls | Chapter 6
-|    | 13 February | Experienced | Measurement Error | Chapter 15 
+|    | 6 February | Experienced | <[Social Networks II](https://www.youtube.com/watch?v=5oZA8FBn2fc)> | Chapter 14 
+| 06 | 10 February | Beginner | <[Elemental Confounds I](https://www.youtube.com/watch?v=lGR7D45Ww38)> | Chapter 6
+|    | 13 February | Experienced | Gaussian Processes | Chapter 15 
 | 07 | 17 February | Beginner | Overfitting | Chapter 7
-|    | 20 February | Experienced | Missing Data | Chapter 15 
+|    | 20 February | Experienced | Measurement Error | Chapter 15 
 | 08 | 24 February | Beginner | Markov chain Monte Carlo | Chapters 9 & 10
-|    | 27 February | Experienced | Generalized Linear Madness | Chapter 16 
+|    | 27 February | Experienced | Missing Data | Chapter 16 
 | 09 | 3 March | Beginner | Modeling Events | Chapters 10 & 11
-|    | 6 March | Experienced | Special Topic - Students' Choice! | 
+|    | 6 March | Experienced | Generalized Linear Madness | 
 | 10 | 10 March | Beginner | Multilevel Models | Chapter 12 
 |    | 13 March | Experienced | Special Topic - Students' Choice! | 
 
