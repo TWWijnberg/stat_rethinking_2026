@@ -16,8 +16,8 @@ dag <- dagitty('dag {
 }')
 
 coordinates(dag) <- list(
-  x = c(Sex = 0, Age = 2, Height = 1, Weight = 1),
-  y = c(Sex = 0, Age = 0, Height = 1, Weight = 2)
+  x = c(Sex = 1, Age = 1, Height = 2, Weight = 3),
+  y = c(Sex = 1, Age = 3, Height = 2, Weight = 2)
 )
 
 plot(dag)
@@ -105,18 +105,5 @@ prior_params <- list(
   sigma_max = 15        # Max residual SD
 )
 
-# ============================================================================
-# PART 6: Model Formula (for total effect)
-# ============================================================================
-
-# Model conditioning on Age only (not Height) to get TOTAL effect
-# Note: sex is a factor with integer levels (1=Female, 2=Male) - rethinking style
-weight_model <- alist(
-  weight ~ dnorm(mu, sigma),
-  mu <- a[sex] + b_age * age,
-  a[sex] ~ dnorm(5, 10),          # Sex-specific intercepts
-  b_age ~ dunif(0, 0.3),          # kg per month
-  sigma ~ dunif(0, 15)
-)
 
 cat("\nDAG analysis complete. Model ready for fitting.\n")

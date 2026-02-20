@@ -43,35 +43,62 @@ cat("Saved: 01_synthetic_data.png\n")
 # Note: sex is a factor with integer levels (1=Female, 2=Male)
 d_fit <- list(
   weight = d_syn$weight,
+  height = d_syn$height,
+  height_bar = rep(mean(d_syn$height),times=length(d_syn$height)),  # Center height for better interpretation
   age = d_syn$age,
   sex = as.integer(d_syn$sex)
 )
 
 # Fit the model - KEEP THIS EXPLICIT so you can see what's being fit
-fit_syn <- ulam(
-  alist(
-    weight ~ dnorm(mu, sigma),
-    mu <- a[sex] + b_age * age,
-    a[sex] ~ dnorm(5, 10),
-    b_age ~ dunif(0, 0.3),
-    sigma ~ dunif(0, 15)
-  ),
+# Model conditioning on Age only (not Height) to get TOTAL effect
+# Note: sex is a factor with integer levels (1=Female, 2=Male) - rethinking style
+sex_on_weight_total <- alist(
+  weight ~ dnorm(mu, sigma),
+  mu <- a[sex],
+  a[sex] ~ dnorm(5, 10),     # Sex-specific intercepts
+  sigma ~ dunif(0, 15)
+)
+
+sex_on_weight_direct <- alist(
+  weight ~ dnorm(mu, sigma),
+  mu <- a[sex] + b_height[sex] * (height - height_bar),
+  a[sex] ~ dnorm(0, 10),          # Sex-specific intercepts
+  b_height[sex] ~ dnorm(0.3, 1),         # kg per cm of height
+  sigma ~ dunif(0, 15)
+)
+
+
+fit_total_syn <- ulam(sex_on_weight_total,
   data = d_fit,
   chains = 4,
   cores = 4,
   iter = 2000
 )
 
+fit_direct_syn <- ulam(sex_on_weight_direct,
+  data = d_fit,
+  chains = 4,
+  cores = 4,
+  iter = 2000,
+  sample = TRUE
+)
+
+
 # ============================================================================
 # STEP 3: Check MCMC Diagnostics
 # ============================================================================
 
 cat("\n=== MCMC Diagnostics ===\n")
-print(precis(fit_syn, depth = 2))
+print(precis(fit_total_syn, depth = 2))
+print(precis(fit_direct_syn, depth = 2))
+
+summary(d_syn$height)
+summary(d_syn$weight)
 
 # Check trace plots
 png(file.path(output_dir, "02_synthetic_traceplot.png"), width = 800, height = 600)
-traceplot(fit_syn)
+traceplot(fit_total_syn)
+traceplot(fit_direct_syn)
 dev.off()
 cat("Saved: 02_synthetic_traceplot.png\n")
 
