@@ -43,13 +43,13 @@ formula_quap_direct <- alist(
 fit_quap_direct <- quap(formula_quap_direct, data = data)
 
 precis(fit_quap_direct)
-
+plot(fit_quap_direct)
 # --- Causal Effect via Posterior Simulation ----------------------------------
 # Estimate do(X): causal effect of 1-unit increase in X on Y
 # True effect is 0.5
 
 post <- extract.samples(fit_quap_direct)
-
+plot(post)
 # Sample Z from data (marginalize over Z distribution)
 n_sim <- 1e5
 Gs <- sample(data$G, size = n_sim, replace = TRUE)
@@ -124,3 +124,4 @@ formula_quap <- alist(
 fit_quap <- quap(formula_quap, data = data)
 
 precis(fit_quap)
+
