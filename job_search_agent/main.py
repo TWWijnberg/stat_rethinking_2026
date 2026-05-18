@@ -1,25 +1,29 @@
 #!/usr/bin/env python3
 """
 Job Search Agent — main entry point.
-Run this script daily to scrape, score, and email your job digest.
+
+Scrapes job sources, removes duplicates, exports a CSV, and emails it to you.
+Scoring is done by pasting the CSV into Claude using scoring_prompt.md.
 
     python main.py
 
 See setup_guide.md for first-time setup instructions.
 """
-import sys
 from pathlib import Path
 from dotenv import load_dotenv
 
 load_dotenv(Path(__file__).parent / ".env")
 
 from database import init_db, is_new_job, save_jobs
-from scorer import load_config, score_and_rank
 from emailer import send_digest
-from feedback import read_feedback_from_sheet, print_feedback_summary
 from scrapers.rss_scraper import scrape_indeed, scrape_nhs_jobs
-from scrapers.wellfound import scrape_wellfound
 from scrapers.employers import scrape_all_employers
+import yaml
+
+
+def load_config() -> dict:
+    with open(Path(__file__).parent / "config.yaml") as f:
+        return yaml.safe_load(f)
 
 
 def main():
@@ -31,28 +35,26 @@ def main():
     config = load_config()
 
     # ── Scrape ────────────────────────────────
-    print("\n[1/4] Scraping sources...")
+    print("\n[1/3] Scraping sources...")
 
     print("  Indeed UK (RSS)...")
     indeed = scrape_indeed()
-    print(f"    → {len(indeed)} jobs found")
+    print(f"    → {len(indeed)} jobs")
 
     print("  NHS Jobs (RSS)...")
     nhs = scrape_nhs_jobs()
-    print(f"    → {len(nhs)} jobs found")
-
-    print("  Wellfound...")
-    wellfound = scrape_wellfound()
-    print(f"    → {len(wellfound)} jobs found")
+    print(f"    → {len(nhs)} jobs")
 
     print("  Employer career pages...")
     employers = scrape_all_employers()
-    print(f"    → {len(employers)} jobs found")
+    print(f"    → {len(employers)} jobs")
 
-    all_jobs = indeed + nhs + wellfound + employers
+    # Future: parse Wellfound alert emails from Gmail inbox
+
+    all_jobs = indeed + nhs + employers
     print(f"\n  Total scraped: {len(all_jobs)}")
 
-    # ── Filter already-seen jobs ──────────────
+    # ── Deduplicate ───────────────────────────
     new_jobs = [j for j in all_jobs if is_new_job(j["url"])]
     print(f"  New (not seen before): {len(new_jobs)}")
 
@@ -60,28 +62,14 @@ def main():
         print("\nNo new jobs today. Nothing to send.")
         return
 
-    # ── Score and rank ────────────────────────
-    print("\n[2/4] Scoring jobs...")
-    ranked = score_and_rank(new_jobs, config)
-    print(f"  {len(ranked)} job(s) above minimum score threshold")
-
-    # Save all new jobs (including those below threshold, for dedup purposes)
     save_jobs(new_jobs)
 
-    # ── Feedback summary ──────────────────────
-    print("\n[3/4] Reading feedback...")
-    feedback = read_feedback_from_sheet()
-    print_feedback_summary(feedback)
+    # ── Email CSV ─────────────────────────────
+    print("\n[2/3] Sending email...")
+    send_digest(new_jobs, config)
 
-    # ── Send digest ───────────────────────────
-    print("\n[4/4] Sending email digest...")
-    if ranked:
-        send_digest(ranked, config)
-    else:
-        print("  No jobs above score threshold today — no email sent.")
-        print("  Tip: lower minimum_score in config.yaml if you're seeing too few results.")
-
-    print("\nDone. ✓")
+    print("\n[3/3] Done. ✓")
+    print(f"\nNext step: open the attached CSV in Claude using scoring_prompt.md")
 
 
 if __name__ == "__main__":

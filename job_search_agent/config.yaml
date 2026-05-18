@@ -1,6 +1,5 @@
 # ============================================================
 # Job Search Agent — Configuration
-# Edit this file to tune your search preferences over time.
 # ============================================================
 
 email:
@@ -8,93 +7,8 @@ email:
   recipient: "thijs.wijnberg@gmail.com"
   subject_prefix: "[Job Digest]"
 
-scoring:
-  # Points awarded when keyword found in job title (seniority)
-  seniority_keywords:
-    "head of": 10
-    "deputy director": 9
-    "director": 8
-    "senior manager": 7
-    "vp": 8
-    "vice president": 8
-    "chief": 5
-    "lead": 3
-
-  # Points awarded when keyword found in title or description (domain)
-  domain_keywords:
-    "analytics": 8
-    "insight": 8
-    "insights": 8
-    "strategy": 8
-    "strategic": 7
-    "product": 6
-    "intelligence": 6
-    "business intelligence": 7
-    "bi ": 5
-    "data": 5
-    "reporting": 5
-    "performance": 4
-    "decision": 4
-
-  # Bonus points if the role appears to report into C-suite
-  reporting_keywords:
-    "cfo": 5
-    "ceo": 5
-    "coo": 5
-    "cpo": 5
-    "chief financial": 5
-    "chief executive": 5
-    "chief operating": 5
-    "chief product": 5
-
-  # Points for health/care sector signals
-  sector_keywords:
-    "nhs": 8
-    "healthtech": 7
-    "healthcare": 7
-    "digital health": 7
-    "integrated care": 7
-    "health": 6
-    "icb": 6
-    "medtech": 6
-    "hospital": 5
-    "clinical": 5
-    "care": 4
-    "patient": 4
-
-  # Negative points — roles that don't fit
-  negative_keywords:
-    "data engineer": -8
-    "software engineer": -8
-    "etl": -6
-    "devops": -8
-    "developer": -5
-    "machine learning engineer": -5
-    "graduate": -3
-    "intern": -5
-    "junior": -4
-
-  location:
-    # Roles in these locations get a bonus
-    preferred:
-      - "remote"
-      - "hybrid"
-      - "sheffield"
-      - "yorkshire"
-      - "leeds"
-      - "manchester"
-    # Roles in these locations get a small penalty (but still shown if score is high)
-    neutral:
-      - "london"
-    preferred_bonus: 5
-    neutral_penalty: -2
-
-  # Only include jobs above this score in the digest
-  minimum_score: 8
-  # Maximum jobs to show per email
-  top_n: 25
-
-# RSS search terms for Indeed and NHS Jobs
+# Search terms used when scraping RSS feeds.
+# Add or remove queries here to broaden or narrow the net.
 sources:
   indeed_searches:
     - query: "head of analytics"
@@ -123,12 +37,9 @@ sources:
 
 # Feedback via Google Form — fill these in after completing Step 5 of setup_guide.md
 feedback:
-  # The pre-fill base URL from your Google Form (see setup_guide.md)
   google_form_url: ""
-  # Field entry IDs from your Google Form
   job_id_field: "entry.XXXXXXXXX"
   rating_field: "entry.YYYYYYYYY"
-  # Google Sheet that stores form responses
   google_sheet_id: ""
   google_sheet_name: "Form Responses 1"
   credentials_file: "google_credentials.json"

@@ -20,18 +20,7 @@ def init_db():
             salary      TEXT,
             source      TEXT,
             posted_date TEXT,
-            score       REAL,
-            reasons     TEXT,
             seen_date   TEXT
-        )
-    """)
-    c.execute("""
-        CREATE TABLE IF NOT EXISTS feedback (
-            id        INTEGER PRIMARY KEY AUTOINCREMENT,
-            job_id    TEXT,
-            rating    TEXT,
-            notes     TEXT,
-            timestamp TEXT
         )
     """)
     conn.commit()
@@ -54,8 +43,8 @@ def save_jobs(jobs: list):
         c.execute("""
             INSERT OR IGNORE INTO jobs
               (id, title, company, location, url, description,
-               salary, source, posted_date, score, reasons, seen_date)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+               salary, source, posted_date, seen_date)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             job["id"],
             job["title"],
@@ -66,9 +55,21 @@ def save_jobs(jobs: list):
             job.get("salary", ""),
             job.get("source", ""),
             job.get("posted_date", ""),
-            job.get("score", 0),
-            " · ".join(job.get("reasons", [])),
             datetime.now().isoformat(),
         ))
     conn.commit()
     conn.close()
+
+
+def get_jobs_by_ids(job_ids: list) -> list:
+    """Return full job records for a list of IDs — used by review.py."""
+    if not job_ids:
+        return []
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    placeholders = ",".join("?" * len(job_ids))
+    c.execute(f"SELECT * FROM jobs WHERE id IN ({placeholders})", job_ids)
+    rows = [dict(r) for r in c.fetchall()]
+    conn.close()
+    return rows
