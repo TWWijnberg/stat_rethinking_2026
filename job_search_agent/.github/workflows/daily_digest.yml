@@ -1,0 +1,51 @@
+name: Daily Job Digest
+
+on:
+  schedule:
+    # Runs at 07:00 UTC = 08:00 UK time on weekdays
+    # Adjust the hour if you want a different delivery time
+    - cron: "0 7 * * 1-5"
+  # Also allows you to trigger a run manually from the GitHub website
+  workflow_dispatch:
+
+jobs:
+  run-digest:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # Restore the jobs database from the previous run so we don't
+      # re-send jobs that were already in a past digest.
+      - name: Restore jobs database
+        uses: actions/cache@v4
+        with:
+          path: jobs.db
+          key: jobs-db-${{ github.run_number }}
+          restore-keys: |
+            jobs-db-
+
+      - name: Write Google credentials file (if configured)
+        if: ${{ secrets.GOOGLE_CREDENTIALS_JSON != '' }}
+        run: echo '${{ secrets.GOOGLE_CREDENTIALS_JSON }}' > google_credentials.json
+
+      - name: Run job digest
+        env:
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+        run: python main.py
+
+      # Persist the updated database for the next run
+      - name: Save jobs database
+        uses: actions/cache@v4
+        with:
+          path: jobs.db
+          key: jobs-db-${{ github.run_number }}
