@@ -36,7 +36,9 @@ jobs:
 
       - name: Write Google credentials file (if configured)
         if: ${{ secrets.GOOGLE_CREDENTIALS_JSON != '' }}
-        run: echo '${{ secrets.GOOGLE_CREDENTIALS_JSON }}' > google_credentials.json
+        env:
+          GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
+        run: echo "$GOOGLE_CREDENTIALS_JSON" > google_credentials.json
 
       - name: Run job digest
         env:

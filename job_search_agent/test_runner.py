@@ -115,8 +115,10 @@ print("=" * 50)
 
 import importlib.util
 spec = importlib.util.spec_from_file_location("review", "review.py")
-mod = importlib.util.load_from_spec = spec
-print("  review.py          OK — imports without error")
+mod = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(mod)
+assert hasattr(mod, "main"), "review.py missing main() function"
+print("  review.py          OK — module loaded, main() present")
 
 # ── 6. Show CSV as Claude would receive it ────────────────────────────────────
 print()
