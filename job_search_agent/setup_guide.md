@@ -1,18 +1,38 @@
 # Job Search Agent — Setup Guide
 
 This guide walks you through everything you need to get the agent running.
-No technical background required. Each step includes exactly what to do
-and why.
+No technical background required. Each step says exactly what to do and why.
 
 **Time required:** about 30–45 minutes for the full setup.
 
 ---
 
-## What you'll end up with
+## How the agent works
 
-- A script that scrapes job boards daily and emails you a ranked digest
-- Feedback buttons in the email (👍 / 👎) that open a Google Form on your phone
-- An optional second step to run it automatically in the cloud (no laptop needed)
+```
+Daily
+─────
+python main.py
+  → scrapes Indeed UK, NHS Jobs, and employer career pages
+  → removes jobs you've already seen
+  → emails you a CSV of new roles
+
+You
+  → open the CSV, paste it into Claude with scoring_prompt.md
+  → Claude returns a ranked list with reasoning
+  → rate jobs you care about using 👍 / 👎 links in the email
+
+Weekly
+──────
+python review.py
+  → pulls your ratings from Google Sheet
+  → exports feedback_report.csv
+
+You
+  → paste feedback_report.csv into Claude with review_scoring_feedback.md
+  → Claude spots patterns in your feedback and outputs an updated scoring_prompt.md
+  → you save the new version — criteria improve over time
+```
 
 ---
 
@@ -23,7 +43,8 @@ and why.
 3. Set up your Gmail App Password
 4. Run the agent for the first time
 5. Set up the Google Form for feedback *(optional but recommended)*
-6. Automate with GitHub Actions *(optional — removes need to run manually)*
+6. Set up automatic feedback reading *(optional — needed for review.py)*
+7. Automate with GitHub Actions *(optional — removes need to run manually)*
 
 ---
 
@@ -39,19 +60,19 @@ Python is the programming language the agent is written in.
 4. When it finishes, open a terminal:
    - **Windows:** press `Win + R`, type `cmd`, press Enter
    - **Mac:** open Spotlight (Cmd + Space), type `Terminal`, press Enter
-5. Type the following and press Enter to confirm Python is installed:
+5. Confirm Python is installed:
    ```
    python --version
    ```
    You should see something like `Python 3.11.x`. If you see an error,
-   try `python3 --version` instead — and use `python3` everywhere below
+   try `python3 --version` — and use `python3` everywhere in this guide
    instead of `python`.
 
 ---
 
 ## Step 2 — Download the code
 
-### Option A — Using Git (recommended if you have it)
+### Option A — Using Git (if you have it)
 
 ```
 git clone https://github.com/TWWijnberg/job-search-agent.git
@@ -67,55 +88,54 @@ cd job-search-agent
    ```
    cd Desktop/job-search-agent
    ```
-   *(adjust the path to wherever you unzipped it)*
 
 ### Install the required libraries
 
-In your terminal, with the job-search-agent folder open, run:
+In your terminal (in the job-search-agent folder):
 
 ```
 pip install -r requirements.txt
 ```
 
-This installs all the tools the agent needs. It may take a minute.
+This may take a minute. You should see a list of packages being installed.
 
 ---
 
 ## Step 3 — Set up your Gmail App Password
 
-The agent sends you an email each day. To do this, it needs a special
-"App Password" — a one-time code that lets it send email on your behalf
-without using your main Gmail password.
+The agent sends you an email each day with a CSV attached. To do this,
+it needs a special "App Password" — not your normal Gmail password.
 
 **Why not use your normal password?** Google blocks direct logins from
 scripts for security reasons. App Passwords are specifically designed for
-this use case.
+this use case and can be revoked at any time.
 
 ### Create the App Password
 
 1. Go to your Google Account: **https://myaccount.google.com/**
 2. Click **Security** in the left sidebar
-3. Scroll down to **"How you sign in to Google"** and click **2-Step Verification**
+3. Under **"How you sign in to Google"**, click **2-Step Verification**
    - If it's not enabled, enable it first (you'll need your phone)
-4. Scroll down to the bottom of the 2-Step Verification page
-5. Click **App passwords** (you may need to search for it)
-6. In the "Select app" dropdown choose **Mail**
-7. In the "Select device" dropdown choose **Other** and type `Job Agent`
-8. Click **Generate**
-9. Google will show you a **16-character password** like `abcd efgh ijkl mnop`
-   — copy it, you'll need it in a moment
+4. Scroll to the bottom of that page and click **App passwords**
+   *(if you don't see it, search for "App passwords" in the search bar at the top)*
+5. In the **"Select app"** dropdown choose **Mail**
+6. In the **"Select device"** dropdown choose **Other**, type `Job Agent`
+7. Click **Generate**
+8. Google shows you a **16-character password** like `abcd efgh ijkl mnop`
+   — copy it now (you won't see it again)
 
 ### Add the password to the agent
 
-1. In the job-search-agent folder, find the file called **`.env.example`**
-2. Make a copy of it and rename the copy to **`.env`** (note: no `.example`)
-3. Open `.env` in a text editor (Notepad on Windows, TextEdit on Mac)
-4. Replace `your-16-character-app-password-here` with the password you just copied
-   (remove the spaces — it should be 16 characters with no spaces)
-5. Save and close the file
+1. In the job-search-agent folder, find **`.env.example`**
+2. Make a copy of it and rename the copy to **`.env`** (remove `.example`)
+   - **Windows:** right-click → Copy, then right-click → Paste, rename to `.env`
+   - **Mac:** duplicate the file in Finder, rename to `.env`
+3. Open `.env` in a text editor
+4. Replace `your-16-character-app-password-here` with your password
+   (no spaces — 16 characters only)
+5. Save and close
 
-Your `.env` file should look like this:
-
+Your `.env` file should look like:
 ```
 GMAIL_APP_PASSWORD=abcdefghijklmnop
 ```
@@ -124,33 +144,50 @@ GMAIL_APP_PASSWORD=abcdefghijklmnop
 
 ## Step 4 — Run the agent for the first time
 
-In your terminal (in the job-search-agent folder), run:
+In your terminal (in the job-search-agent folder):
 
 ```
 python main.py
 ```
 
-You should see output like this:
-
+You should see:
 ```
 ========================================
   Job Search Agent
 ========================================
 
-[1/4] Scraping sources...
+[1/3] Scraping sources...
   Indeed UK (RSS)...
-    → 47 jobs found
+    → 47 jobs
   NHS Jobs (RSS)...
-    → 23 jobs found
-  ...
+    → 31 jobs
+  Employer career pages...
+    SystemC... → 4 listings
+    Epic... → 8 listings
+    ...
 
-[4/4] Sending email digest...
-  Email sent to thijs.wijnberg@gmail.com (18 jobs).
+  Total scraped: 97
+  New (not seen before): 97
 
-Done. ✓
+[2/3] Sending email...
+  Email sent to thijs.wijnberg@gmail.com with 97 jobs (new_jobs_2026-05-18.csv).
+
+[3/3] Done. ✓
 ```
 
-Check your inbox — you should receive the digest email within a few seconds.
+Check your inbox — you should receive an email with a CSV attached.
+
+### How to score the jobs
+
+1. Open the CSV attachment
+2. Open **scoring_prompt.md** (in the job-search-agent folder) in a text editor
+3. Go to **https://claude.ai** and start a new conversation
+4. Paste the full contents of `scoring_prompt.md` into the chat
+5. Then paste the CSV contents beneath it (or upload the file if Claude supports it)
+6. Claude will return a ranked list with a score and reason for each role
+
+The scoring criteria in `scoring_prompt.md` are yours to edit. As you use
+the agent, you'll notice things to tweak — just open the file and adjust.
 
 ### If something goes wrong
 
@@ -158,65 +195,55 @@ Check your inbox — you should receive the digest email within a few seconds.
 → Check that your `.env` file exists (not `.env.example`) and the password
   is correct with no extra spaces.
 
-**"No new jobs today"**
-→ This is normal on the second+ run — the agent tracks what it has already
-  sent you to avoid duplicates. Try lowering `minimum_score` in `config.yaml`
-  if the digest is consistently empty.
+**A scraper shows 0 jobs**
+→ Usually a temporary network issue. Try again the next day. If it persists,
+  see *Updating scrapers* at the bottom of this guide.
 
-**Scraper warnings** (e.g. "Wellfound scrape failed")
-→ These are usually temporary network issues. The agent continues with other
-  sources. If a specific scraper fails every time, see the "Updating scrapers"
-  section at the bottom of this guide.
+**"No new jobs today"**
+→ Normal from the second run onward — the agent tracks what it has already
+  sent you to avoid duplicates.
 
 ---
 
 ## Step 5 — Set up the Google Form for feedback *(optional)*
 
-This lets you rate jobs with 👍 / 👎 from your phone, which the agent uses
-to improve future recommendations.
+This adds 👍 / 👎 links to your daily email. Clicking one on your phone
+opens a Google Form pre-filled with the job details — rate it and add a
+note if you want. Ratings feed into the weekly review step.
 
 ### Create the Google Form
 
-1. Go to **https://forms.google.com** and click **Blank form** (the + button)
+1. Go to **https://forms.google.com** and click the **+** (blank form)
 2. Name it: `Job Search Feedback`
-3. Add these four questions (click the + button to add each one):
+3. Add these three questions using the **+** button:
 
    **Question 1**
-   - Question type: **Short answer**
-   - Question text: `Job ID`
-   - Click the three dots → tick **"Response validation"** → not needed,
-     just leave it
+   - Type: **Short answer**
+   - Text: `Job ID`
 
    **Question 2**
-   - Question type: **Multiple choice**
-   - Question text: `Rating`
+   - Type: **Multiple choice**
+   - Text: `Rating`
    - Options: `Good fit` and `Not a fit`
 
    **Question 3**
-   - Question type: **Short answer**
-   - Question text: `Notes`
-   - Description: `Optional — explain why this role is or isn't a fit`
+   - Type: **Short answer**
+   - Text: `Notes`
+   - Description: `Optional — what made this a good or bad fit?`
 
-4. Click **Send** (top right) to get the form link — but don't share it yet.
+### Get the pre-fill field IDs
 
-### Find the pre-fill field IDs
-
-This step sounds technical but it's just a few clicks:
-
-1. In the form editor, click the three dots (⋮) in the top right → **Get pre-filled link**
-2. Fill in dummy values in each field:
-   - Job ID: `TESTID`
-   - Rating: select either option
-   - Notes: `test`
-3. Click **Get link** at the bottom
-4. You'll get a URL that looks like:
+1. Click the three dots (⋮) top right → **Get pre-filled link**
+2. Fill in dummy values: Job ID = `TEST`, select either rating, Notes = `test`
+3. Click **Get link**
+4. You'll get a URL like:
    ```
-   https://docs.google.com/forms/d/e/LONG_FORM_ID/viewform?usp=pp_url&entry.123456789=TESTID&entry.987654321=Good+fit&entry.111222333=test
+   https://docs.google.com/forms/d/e/FORM_ID/viewform?usp=pp_url&entry.111111111=TEST&entry.222222222=Good+fit&entry.333333333=test
    ```
 5. Note down:
-   - `LONG_FORM_ID` — everything between `/d/e/` and `/viewform`
-   - `entry.123456789` — this is your **Job ID field ID**
-   - `entry.987654321` — this is your **Rating field ID**
+   - `FORM_ID` — everything between `/d/e/` and `/viewform`
+   - `entry.111111111` — Job ID field
+   - `entry.222222222` — Rating field
 
 ### Update config.yaml
 
@@ -224,83 +251,86 @@ Open `config.yaml` in a text editor and fill in the feedback section:
 
 ```yaml
 feedback:
-  google_form_url: "https://docs.google.com/forms/d/e/LONG_FORM_ID/viewform?usp=pp_url"
-  job_id_field: "entry.123456789"
-  rating_field: "entry.987654321"
-  google_sheet_id: ""        # leave blank for now
-  google_sheet_name: "Form Responses 1"
-  credentials_file: "google_credentials.json"
+  google_form_url: "https://docs.google.com/forms/d/e/FORM_ID/viewform?usp=pp_url"
+  job_id_field: "entry.111111111"
+  rating_field: "entry.222222222"
 ```
 
-Replace `LONG_FORM_ID`, `entry.123456789`, and `entry.987654321` with your
-actual values.
+After this, your daily email will include 👍 / 👎 buttons for each job.
 
-After this, the 👍 / 👎 buttons in the email will work on your phone.
-
-### Link the form to a Google Sheet (for the agent to read your feedback)
-
-By default, Google Forms saves responses to a Sheet automatically:
+### Connect form responses to a Google Sheet
 
 1. In the form editor, click the **Responses** tab
 2. Click the green Sheets icon (📊) → **Create a new spreadsheet**
-3. Name it `Job Search Feedback` and click Create
-4. A Google Sheet will open — note the ID from the URL:
+3. Name it `Job Search Feedback` → **Create**
+4. The sheet URL will look like:
    ```
-   https://docs.google.com/spreadsheets/d/THIS_IS_THE_SHEET_ID/edit
+   https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit
    ```
 5. Add the Sheet ID to `config.yaml`:
    ```yaml
-   google_sheet_id: "THIS_IS_THE_SHEET_ID"
+   google_sheet_id: "YOUR_SHEET_ID"
    ```
-
-At this point the agent will print a feedback summary each run, and over time
-you'll see notes like:
-
-```
-Common words in 'not a fit' notes: ['engineering', 'technical', 'bi']
-→ Consider adding these as negative_keywords in config.yaml
-```
-
-### (Advanced) Automate reading feedback with a service account
-
-The above will show the feedback summary but won't automatically adjust scores.
-For fully automatic score tuning, you need to give the agent access to your Sheet:
-
-1. Go to **https://console.cloud.google.com/**
-2. Create a new project (name it anything, e.g. `job-agent`)
-3. In the search bar, search for **"Google Sheets API"** → click Enable
-4. Go to **IAM & Admin → Service Accounts → Create Service Account**
-   - Name: `job-agent-reader`
-   - Click Create and Continue, skip the optional steps, click Done
-5. Click on the service account → **Keys** tab → **Add Key → Create new key → JSON**
-6. Download the JSON file, rename it `google_credentials.json`, and put it in
-   your job-search-agent folder
-7. Back in the Service Accounts list, copy the service account's email address
-   (looks like `job-agent-reader@your-project.iam.gserviceaccount.com`)
-8. Open your Google Sheet, click **Share**, paste in that email, give it **Viewer** access
-
-Now when you run `python main.py`, the agent will read your feedback scores
-automatically.
 
 ---
 
-## Step 6 — Automate with GitHub Actions *(optional)*
+## Step 6 — Set up automatic feedback reading *(optional)*
 
-Right now you run `python main.py` manually. This step sets it up to run
-automatically every weekday morning at 8am UK time — no laptop needed.
+This allows `review.py` to pull your ratings automatically. Without it,
+`review.py` will skip the Google Sheet step.
 
-You'll need a GitHub account. If you don't have one, sign up free at
-**https://github.com**.
+### Create a service account
+
+A service account is a special Google account for scripts — it's not a
+personal account, just a way to give the agent read access to your Sheet.
+
+1. Go to **https://console.cloud.google.com/**
+2. Click the project dropdown at the top → **New Project**
+   - Name it `job-agent` → **Create**
+3. In the search bar, type **Google Sheets API** → click it → **Enable**
+4. Go to **IAM & Admin** → **Service Accounts** → **Create Service Account**
+   - Name: `job-agent-reader` → **Create and Continue**
+   - Skip the optional steps → **Done**
+5. Click on the service account you just created → **Keys** tab
+   → **Add Key** → **Create new key** → **JSON** → **Create**
+6. A JSON file downloads — rename it `google_credentials.json` and put it
+   in your job-search-agent folder
+
+### Share your Sheet with the service account
+
+1. Open the JSON file in a text editor
+2. Find the `"client_email"` field — it looks like:
+   `job-agent-reader@job-agent-123456.iam.gserviceaccount.com`
+3. Open your `Job Search Feedback` Google Sheet
+4. Click **Share** → paste in that email → give it **Viewer** access → **Done**
+
+### Test it
+
+Install the Google libraries:
+```
+pip install gspread google-auth
+```
+
+Then run:
+```
+python review.py
+```
+
+If your Sheet has ratings, you'll see `feedback_report.csv` created in the folder.
+
+---
+
+## Step 7 — Automate with GitHub Actions *(optional)*
+
+This runs the agent every weekday morning at 8am UK time without you
+having to open a terminal. You'll need a GitHub account (free at github.com).
 
 ### Push the code to GitHub
 
 If you haven't already:
 
-1. Create a new repository at **https://github.com/new**
-   - Name: `job-search-agent`
-   - Set it to **Private** (keeps your config private)
-   - Click **Create repository**
-
+1. Go to **https://github.com/new** — create a private repository called
+   `job-search-agent`
 2. In your terminal (in the job-search-agent folder):
    ```
    git init
@@ -309,102 +339,96 @@ If you haven't already:
    git remote add origin https://github.com/YOUR_USERNAME/job-search-agent.git
    git push -u origin main
    ```
-   Replace `YOUR_USERNAME` with your GitHub username.
 
 ### Add your secrets to GitHub
 
-GitHub Actions needs your Gmail password, but you should never put passwords
-in code. Instead, you store them as "secrets":
+Never put passwords in code. Store them as GitHub Secrets instead:
 
-1. Go to your repository on GitHub
-2. Click **Settings** → **Secrets and variables** → **Actions**
-3. Click **New repository secret**
-4. Name: `GMAIL_APP_PASSWORD`, Value: your 16-character app password → **Add secret**
-5. If you set up Google credentials (Step 5), add another secret:
-   Name: `GOOGLE_CREDENTIALS_JSON`
-   Value: paste the entire contents of your `google_credentials.json` file
+1. Go to your repository → **Settings** → **Secrets and variables** → **Actions**
+2. **New repository secret**:
+   - Name: `GMAIL_APP_PASSWORD`
+   - Value: your 16-character app password
+3. If you set up Step 6, add another secret:
+   - Name: `GOOGLE_CREDENTIALS_JSON`
+   - Value: paste the full contents of `google_credentials.json`
 
 ### Enable the workflow
 
-The workflow file (`.github/workflows/daily_digest.yml`) is already included
-in the code. GitHub will pick it up automatically once the code is pushed.
+The workflow file (`.github/workflows/daily_digest.yml`) is already in the
+code. Once pushed to GitHub, it runs automatically.
 
-To verify it's working:
-
-1. Go to your repository → **Actions** tab
-2. Click **Daily Job Digest** in the left panel
-3. Click **Run workflow** → **Run workflow** to trigger it manually
-4. Watch the run — it should turn green and you'll get an email
-
-After that, it runs automatically every weekday at 8am UK time.
+To verify: go to your repository → **Actions** tab → **Daily Job Digest**
+→ **Run workflow** → check it turns green and you receive an email.
 
 ---
 
-## Tuning your results over time
+## The weekly review
 
-The agent gets better as you rate more jobs. Here's how to use that:
+Once you have 10+ job ratings, run:
 
-### Too many irrelevant results?
-
-Open `config.yaml` and add bad keywords to `negative_keywords`:
-
-```yaml
-negative_keywords:
-  "data engineer": -8
-  "bi developer": -8      # add this if "BI developer" roles keep appearing
-  "reporting analyst": -5  # add if too junior
+```
+python review.py
 ```
 
-### Not finding the right roles?
+This creates `feedback_report.csv`. Then:
 
-Increase the score for your most important keywords:
+1. Open Claude (https://claude.ai)
+2. Open `review_scoring_feedback.md` in a text editor — paste its contents
+   into Claude
+3. Replace the placeholder with the current contents of `scoring_prompt.md`
+4. Paste the contents of `feedback_report.csv` beneath it
+5. Claude will output an updated `scoring_prompt.md` — review and save it
 
-```yaml
-seniority_keywords:
-  "head of": 15      # was 10 — boost this signal
-```
+Do this weekly or whenever you've accumulated enough new ratings. Over time
+your criteria get sharper.
 
-Or add new search terms in the `indeed_searches` section.
+---
 
-### Digest is empty or very short?
+## About Wellfound
 
-Lower the `minimum_score` from 8 to 5 or 6. This lets through more marginal
-matches — useful early on while you're still calibrating.
+Wellfound's website is JavaScript-rendered, which means standard scrapers
+can't read it. The recommended workaround:
+
+1. Go to **https://wellfound.com/jobs**
+2. Set filters: remote, relevant role types
+3. Click the bell icon 🔔 to create a **Job Alert**
+4. Wellfound will email you new matches directly
+
+*(Future upgrade: the agent will parse those alert emails automatically
+and fold them into the daily digest.)*
+
+---
+
+## Tuning your results
+
+### Too many irrelevant roles in the CSV?
+
+Add more specific search queries in `config.yaml` under `indeed_searches`.
+Or, just let Claude filter — the scoring prompt handles most noise.
+
+### Claude keeps scoring a certain type of role too high/low?
+
+Edit `scoring_prompt.md` directly. The criteria are plain English — just
+update the wording to reflect what you actually want.
+
+### The weekly review isn't catching the right patterns?
+
+Add notes when you rate jobs. "Too technical" or "no strategic remit" is
+much more useful to Claude than a bare thumbs-down.
 
 ---
 
 ## Updating scrapers if they break
 
-Web scrapers occasionally break when a website changes its design. Signs that
-a scraper needs updating:
+Signs a scraper needs updating:
+- A source consistently shows 0 results
+- You receive oddly-titled jobs from one source
 
-- A specific source consistently shows 0 results
-- You get unusual job titles in your digest from a specific source
+To fix an employer scraper, open `scrapers/employers.py`, find the employer
+in `_EMPLOYERS`, and update the `url` to their current careers page.
 
-To fix a broken employer scraper:
-
-1. Open `scrapers/employers.py`
-2. Find the employer's entry in the `_EMPLOYERS` list
-3. Update the `url` to the current careers page URL
-4. Update the `link_pattern` regex if the link format has changed
-
-For Indeed and NHS Jobs (RSS scrapers), failures are usually temporary network
-issues — wait a day and try again.
-
----
-
-## About LinkedIn
-
-LinkedIn does not provide a public job RSS feed and blocks automated scraping.
-The reliable way to search LinkedIn is:
-
-1. Go to **https://www.linkedin.com/jobs/search/**
-2. Set your filters (seniority: Director / Senior Manager, location, keywords)
-3. Click the bell icon (🔔) to set up a **Job Alert** — LinkedIn will email you
-   directly when matching roles are posted
-
-This is actually more reliable than scraping because LinkedIn's own algorithm
-does the matching. Set up 2–3 alerts for your key keyword combinations.
+For Indeed and NHS Jobs, 0 results usually means a temporary network issue
+— try again the next day.
 
 ---
 
@@ -412,10 +436,12 @@ does the matching. Set up 2–3 alerts for your key keyword combinations.
 
 | File | Purpose |
 |------|---------|
-| `config.yaml` | Keywords, scoring weights, email settings — edit this to tune results |
-| `.env` | Your Gmail app password — never share or commit this file |
-| `main.py` | Run this to get your digest |
-| `jobs.db` | Database of jobs seen so far (auto-created) |
-| `google_credentials.json` | Google API access (only needed for feedback automation) |
+| `main.py` | Run this daily to get your digest |
+| `review.py` | Run this weekly to generate the feedback report |
+| `scoring_prompt.md` | Paste into Claude with your CSV to score jobs — edit to tune |
+| `review_scoring_feedback.md` | Paste into Claude with feedback_report.csv to update scoring |
+| `config.yaml` | Email settings, search terms, feedback form IDs |
+| `.env` | Your Gmail app password — never share or commit this |
+| `jobs.db` | Database of jobs seen so far — keeps the digest fresh |
 | `scrapers/` | One file per source — update here if a scraper breaks |
-| `setup_guide.md` | This file |
+| `google_credentials.json` | Google API access for feedback reading (Step 6 only) |
