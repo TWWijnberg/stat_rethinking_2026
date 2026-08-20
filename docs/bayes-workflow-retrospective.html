@@ -1,0 +1,553 @@
+<title>Bayes Workflow Retrospective</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+:root{
+  --ground:#F7F8F6; --surface:#FFFFFF; --ink:#17211F; --muted:#667069;
+  --rule:#DCE2DD; --rule-soft:#EAEEEA; --rec:#2C6455; --alt:#5B4B8A; --hot:#A8501F;
+  --display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --body:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono","SFMono-Regular",Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#111514; --surface:#181D1B; --ink:#E7ECE8; --muted:#94A099;
+    --rule:#2A322E; --rule-soft:#212724; --rec:#6FB6A2; --alt:#9C8CD1; --hot:#DE8E5C;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#111514; --surface:#181D1B; --ink:#E7ECE8; --muted:#94A099;
+  --rule:#2A322E; --rule-soft:#212724; --rec:#6FB6A2; --alt:#9C8CD1; --hot:#DE8E5C;
+}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font-family:var(--body);font-size:17px;
+     line-height:1.5;margin:0;padding:0 1.5rem 5rem;-webkit-font-smoothing:antialiased}
+.wrap{max-width:62rem;margin:0 auto;display:flex;flex-direction:column;gap:2.5rem}
+
+.masthead{padding-top:3.5rem;display:flex;flex-direction:column;gap:0.8rem}
+.eyebrow{font-family:var(--mono);font-size:0.7rem;font-weight:500;letter-spacing:0.14em;
+         text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(2rem,4.6vw,2.9rem);
+   line-height:1.05;letter-spacing:-0.02em;margin:0;text-wrap:balance}
+.standfirst{font-size:1.05rem;color:var(--muted);max-width:60ch;margin:0}
+p{margin:0;max-width:70ch}
+
+.legend{display:flex;flex-wrap:wrap;gap:0.5rem 2rem;padding-top:0.9rem;
+        border-top:1px solid var(--rule);font-family:var(--mono);font-size:0.72rem;
+        color:var(--muted)}
+.key{display:inline-flex;align-items:center;gap:0.45rem}
+.dot{width:0.7rem;height:0.7rem;border-radius:2px;display:inline-block}
+.dot.r{background:var(--rec)} .dot.a{background:var(--alt)}
+
+h2{font-family:var(--display);font-weight:600;font-size:1.15rem;letter-spacing:-0.01em;
+   margin:2rem 0 0;padding-bottom:0.4rem;border-bottom:2px solid var(--ink)}
+
+.item{background:var(--surface);border:1px solid var(--rule);display:flex;
+      flex-direction:column;gap:0;overflow:hidden}
+.item-head{display:flex;align-items:baseline;gap:0.9rem;padding:1.05rem 1.3rem 0.5rem}
+.num{font-family:var(--mono);font-size:0.72rem;font-weight:600;color:var(--muted);
+     flex:0 0 auto;padding-top:0.15rem}
+.item-title{font-family:var(--display);font-weight:600;font-size:1.05rem;line-height:1.3}
+.problem{padding:0 1.3rem 0.95rem 3.5rem;color:var(--muted);font-size:0.95rem}
+.opt{display:grid;grid-template-columns:auto 1fr;gap:0 0.9rem;padding:0.95rem 1.3rem;
+     border-top:1px solid var(--rule-soft);align-items:start}
+.opt-lab{font-family:var(--mono);font-size:0.64rem;font-weight:600;letter-spacing:0.1em;
+         text-transform:uppercase;padding:0.18rem 0.5rem;border-radius:2px;white-space:nowrap}
+.opt.r .opt-lab{background:var(--rec);color:var(--surface)}
+.opt.a .opt-lab{background:var(--alt);color:var(--surface)}
+.opt.a .opt-lab:not(:is(:has(*))){}
+.opt.d .opt-lab{background:transparent;color:var(--muted);border:1px solid var(--rule)}
+.opt-body{display:flex;flex-direction:column;gap:0.4rem;font-size:0.97rem}
+.cost{color:var(--muted);font-size:0.9rem}
+.stack{display:flex;flex-direction:column;gap:1.1rem}
+
+code,.v{font-family:var(--mono);font-size:0.85em;background:var(--rule-soft);
+        padding:0.08em 0.35em;border-radius:2px}
+
+.order{font-family:var(--mono);font-size:0.85rem;background:var(--rule-soft);
+       padding:0.8rem 1rem;overflow-x:auto;line-height:1.9;border-radius:2px}
+.order b{color:var(--hot)}
+
+
+.quote{font-family:var(--mono);font-size:0.82rem;color:var(--hot);
+       border-left:2px solid var(--hot);padding-left:0.8rem;margin:0.15rem 0 0.35rem;
+       display:block;line-height:1.6}
+.worked{background:var(--surface);border:1px solid var(--rule);
+        border-left:4px solid var(--rec);padding:1.2rem 1.4rem;display:flex;
+        flex-direction:column;gap:0.7rem}
+.worked h3{font-family:var(--display);font-weight:600;font-size:1.02rem;margin:0}
+.worked ul{margin:0;padding-left:1.1rem;display:flex;flex-direction:column;gap:0.5rem}
+.worked li{font-size:0.96rem}
+.problem.q{padding-left:3.5rem}
+
+
+.teach{background:var(--rule-soft);border:1px dashed var(--rule);padding:1rem 1.2rem;
+       display:flex;flex-direction:column;gap:0.75rem;margin-top:0.3rem}
+.teach-h{font-family:var(--mono);font-size:0.66rem;font-weight:600;letter-spacing:0.12em;
+         text-transform:uppercase;color:var(--muted)}
+.slot{display:flex;flex-direction:column;gap:0.25rem}
+.slot-l{font-family:var(--mono);font-size:0.68rem;font-weight:600;color:var(--rec)}
+.slot p{font-size:0.94rem;margin:0}
+figure{margin:0.4rem 0 0;display:flex;flex-direction:column;gap:0.5rem}
+figure img{width:100%;max-width:100%;display:block;background:#FFFFFF;
+           border:1px solid var(--rule);padding:0.4rem}
+figcaption{font-size:0.86rem;color:var(--muted)}
+footer{border-top:1px solid var(--rule);padding-top:1.1rem;font-family:var(--mono);
+       font-size:0.72rem;color:var(--muted);line-height:1.8;margin-top:1.5rem}
+:focus-visible{outline:2px solid var(--rec);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">bayes-workflow · retrospective after homework A07</div>
+    <h1>Bayes Workflow Retrospective</h1>
+    <p class="standfirst">Twenty-three changes to the skill. Each one has a recommendation and one alternative. Items marked <em>ruled</em> are decided; nothing is applied yet.</p>
+    <div class="legend">
+      <span class="key"><span class="dot r"></span>What I would do, or what you ruled</span>
+      <span class="key"><span class="dot a"></span>One other option</span>
+    </div>
+  </header>
+
+  <h2>How the agent works</h2>
+  <div class="stack">
+
+    <div class="item">
+      <div class="item-head"><span class="num">01</span><span class="item-title">Write in simple language</span></div>
+      <p class="problem">A07 used long sentences and words that are not on the agreed list. This hid the decisions you had to make.</p>
+      <div class="opt r"><span class="opt-lab">Ruled</span><div class="opt-body">
+        <p>Add a <strong>How to write</strong> section to <span class="v">CONTEXT.md</span>. It requires <strong>ASD-STE100 Simplified Technical English</strong> plus the terms already listed in that file. Judge after the next homework whether it worked.</p>
+        <p class="cost">ASD-STE100 has an approved word list, one meaning per word, and a sentence-length limit. It constrains vocabulary, so it can be checked. <span class="v">CONTEXT.md</span> already owns the vocabulary and the agent reads it first on every run, so the rule belongs there. <span class="v">SKILL.md</span> needs no change.</p>
+      </div></div>
+      <div class="opt a"><span class="opt-lab">Rejected</span><div class="opt-body">
+        <p>Write four rules out by hand: one idea per sentence, active voice, agreed terms only, no library function inside a decision.</p>
+        <p class="cost">This was my first recommendation and it was weaker. "One idea per sentence" and "active voice" are style rules. Neither stops the agent choosing a hard word, which was the actual problem. The fourth rule was also in the wrong place — see item 03.</p>
+      </div></div>
+    </div>
+
+    <div class="item">
+      <div class="item-head"><span class="num">02</span><span class="item-title">Propose the simple method first</span></div>
+      <p class="problem">At step 02 the agent built group structure and integer group sizes into the generative model. A flat continuous simulation would have done the job.</p>
+      <div class="opt r"><span class="opt-lab">Ruled</span><div class="opt-body">
+        <p>Add one rule to the sign-off section: <strong>recommend the simplest option that answers the estimand</strong>. Put every complication in a <em>Parked improvements</em> table in the README. Each row names the condition that would justify it.</p>
+        <p class="cost">A07 proved this works. The parked table turned "should the model be more complex?" into a question with evidence attached.</p>
+      </div></div>
+      <div class="opt a"><span class="opt-lab">Rejected</span><div class="opt-body">
+        <p>Make the agent present simple and complex side by side at each step, and let you pick.</p>
+        <p class="cost">You would see the trade-off directly. But every step gets longer, and most of the time the answer is "simple".</p>
+      </div></div>
+    </div>
+
+    <div class="item">
+      <div class="item-head"><span class="num">03</span><span class="item-title">Surface the trade-off, never the limitation</span></div>
+      <p class="problem">Step 05 asked you to sign off on brms refusing to sample from a flat prior. That is a fact about a library. You are a statistician, not the maintainer of brms, so there was nothing for you to rule on.</p>
+      <p class="problem">Worse, the wall was avoidable. The whole prior predictive check is five lines of base R — draw the priors, push them through the linear predictor, add noise. It gives the same answer:</p>
+      <div class="order">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;by hand&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;via brms<br>below 0 kg&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.1%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.1%<br>above 15 kg&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.1%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.1%<br>median&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4.6 kg&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4.5 kg<br>95%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[0, 9]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[0, 9]</div>
+      <div class="opt r"><span class="opt-lab">Ruled</span><div class="opt-body">
+        <p>State the audience in <span class="v">CONTEXT.md</span>: <strong>the human is a statistician who understands what a method implies, not an engineer who knows what a library cannot do.</strong> Then apply a two-tier rule.</p>
+        <p><strong>Tier one — the tool cannot do it, but the method is still available.</strong> Route around it. Write the code by hand. Say nothing, or one line in the script comment. This is not a decision and it never reaches the decision list.</p>
+        <p><strong>Tier two — the tool cannot do it, and that removes a method from the table.</strong> Now it is a decision, but present it as a <strong>trade-off in methodological terms</strong>: what the method would buy, what it costs in time or reliability, and what the fallback method is. Never present the error message.</p>
+        <p class="cost">The test is whether a method is lost. If nothing is lost, there is nothing to weigh. A07's M5 lost nothing, so it should never have been written.</p>
+      </div></div>
+      <div class="opt a"><span class="opt-lab">Alternative</span><div class="opt-body">
+        <p>Same two tiers, but the agent also logs every tier-one workaround in a <em>Constraints</em> section of the README.</p>
+        <p class="cost">A later reader can see why a step has hand-written code instead of a library call. It is more bookkeeping, and most entries will never be read.</p>
+      </div></div>
+    </div>
+
+    <div class="item">
+      <div class="item-head"><span class="num">04</span><span class="item-title">Add a teaching mode</span></div>
+      <p class="problem">The project <span class="v">CLAUDE.md</span> made the agent teach: ask a check question, run code instead of asserting, compare two approaches. You deleted that file and the behaviour went with it.</p>
+      <div class="opt r"><span class="opt-lab">Ruled</span><div class="opt-body">
+        <p>Fold teaching into this skill. Turn it on with <span class="v">/bayes-workflow teach</span>, and record the mode in the README header so it survives — each invocation runs one step, so the mode must persist between them.</p>
+        <p>When the mode is on, every step report gets a <strong>Teaching notes</strong> section at the bottom, after the decision list. It has three slots, at most one of each:</p>
+        <p><strong>Check</strong> — one question that tests whether you can apply the idea, not recall it.<br>
+           <strong>Try it</strong> — a simulation small enough to run in seconds, that shows instead of telling.<br>
+           <strong>Worth knowing</strong> — a connection to something next door, or a mistake people make here.</p>
+        <p>Two rules keep it safe. <strong>Teaching notes never contain a decision.</strong> And <strong>everything above them is identical whether the mode is on or off</strong>, so turning teaching on cannot change the analysis.</p>
+        <p class="cost">One skill to maintain. The teaching sits in a section you can ignore, so the workflow reads the same for real work.</p>
+        <div class="teach">
+          <span class="teach-h">Teaching notes — what step 04 would have produced</span>
+          <div class="slot"><span class="slot-l">Check</span>
+            <p>The direct-effect model conditions on <span class="v">Gs</span>. Suppose you added <span class="v">As</span> as well. Would the <span class="v">Fs</span> coefficient still be the direct effect?</p></div>
+          <div class="slot"><span class="slot-l">Try it</span>
+            <p>Fit it both ways and compare:</p>
+            <div class="order">Ws ~ Fs + Gs&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;b_Fs = +0.478&nbsp;&nbsp;(sd 0.181)<br>Ws ~ Fs + Gs + As&nbsp;&nbsp;b_Fs = +0.292&nbsp;&nbsp;(sd 0.215)</div>
+            <p>The estimate moves by 0.186. That looks like bias. It is not — the move is about one posterior standard deviation, which is noise. Ask <span class="v">dagitty</span> and it says conditioning on <span class="v">{G}</span> or on <span class="v">{G, A}</span> both leave only <span class="v">F -&gt; W</span> open, so the estimand is the same either way.</p></div>
+          <div class="slot"><span class="slot-l">Worth knowing</span>
+            <p>What did change is the precision: the posterior standard deviation grew by 19%. Area is correlated with food at 0.88, so adding it eats variation in food without closing any path. A harmless variable is not a free variable.</p></div>
+        </div>
+      </div></div>
+      <div class="opt a"><span class="opt-lab">Rejected</span><div class="opt-body">
+        <p>Write a separate <span class="v">bayes-tutor</span> skill that wraps the workflow.</p>
+        <p class="cost">The main skill would stay small. But two skills drift apart, and the tutor would have to repeat all nine steps to say anything about them.</p>
+      </div></div>
+    </div>
+
+  </div>
+
+  <h2>Where the steps sit</h2>
+  <div class="stack">
+
+    <div class="item">
+      <div class="item-head"><span class="num">05</span><span class="item-title">Look at the data before you parameterise the generative model</span></div>
+      <p class="problem">Step 02 ran before step 03. But the true parameter values came from the real correlation matrix. The order claimed an independence it did not have. You spotted this.</p>
+      <div class="opt r"><span class="opt-lab">Ruled</span><div class="opt-body">
+        <p>Split step 02 into two. The DAG is structure, and the data cannot supply it, so it goes first. Effect sizes are numbers, and the data may inform them.</p>
+        <p><strong>Condition attached:</strong> seeing the data first must not make the generative model more complicated. What the data may inform is the <em>size</em> of an effect, not the <em>structure</em> of the simulation. The rule that keeps this honest is item 10.</p>
+        <div class="order">01 estimand → 02 <b>DAG</b> → 03 <b>data + EDA</b> → 04 <b>generative model</b> → 05 statistical model<br>→ 06 prior check → 07 recovery → 08 fit → 09 posterior check → 10 estimate</div>
+        <p class="cost">Ten steps instead of nine. The priors must still be set without the data, and that stays a rule.</p>
+      </div></div>
+      <div class="opt a"><span class="opt-lab">Rejected</span><div class="opt-body">
+        <p>Keep nine steps. Require step 02 to label each parameter value: from domain knowledge, or from the data.</p>
+        <p class="cost">No renumbering. But it records the problem instead of fixing it.</p>
+      </div></div>
+    </div>
+
+    <div class="item">
+      <div class="item-head"><span class="num">06</span><span class="item-title">One folder for two estimands</span></div>
+      <p class="problem">A07 used <span class="v">total-effect/</span> and <span class="v">direct-effect/</span>. They shared two whole steps and differed by one term. The split caused path juggling, near-duplicate scripts, and a bug where <span class="v">source()</span> overwrote a path and brms loaded the wrong cached fit.</p>
+      <div class="opt r"><span class="opt-lab">Ruled</span><div class="opt-body">
+        <p>Your shape. <strong>One folder.</strong> The number is the step; the letter is the model. Shared steps get no letter.</p>
+        <div class="order">scripts/04_generative_model.R&nbsp;&nbsp;&nbsp;&nbsp;shared<br>scripts/05a_statistical_model.R&nbsp;&nbsp;model a — total<br>scripts/05b_statistical_model.R&nbsp;&nbsp;model b — direct<br>outputs/09a_posterior_check.png</div>
+        <p class="cost">One README, with a column per model in the status table. No cross-folder paths.</p>
+      </div></div>
+      <div class="opt a"><span class="opt-lab">Rejected</span><div class="opt-body">
+        <p>Keep separate folders, add a <span class="v">common/</span> folder for the shared steps.</p>
+        <p class="cost">It would remove the duplication. It keeps the path juggling, which was the worse half.</p>
+      </div></div>
+    </div>
+
+    <div class="item">
+      <div class="item-head"><span class="num">07</span><span class="item-title">Make the EDA report a default output</span></div>
+      <p class="problem">Step 03 only asked for a real-versus-simulated comparison. You asked for plain descriptive statistics, and that turned out to be what you needed before choosing a statistical model.</p>
+      <div class="opt r"><span class="opt-lab">Ruled</span><div class="opt-body">
+        <p>Describing the data <strong>is part of step 03</strong>, not a step of its own. One script loads the data, describes it, transforms it, then tests it against the generative model. Scope the description to <strong>the DAG's edges</strong>, not every pair of variables.</p>
+        <p class="cost">The DAG already says which relationships matter, so the report does not grow with the number of columns. A07 has been changed to match: <span class="v">03b_eda.R</span> is gone and its work now sits inside <span class="v">03_data.R</span>.</p>
+        <p class="cost"><strong>Starting structure:</strong> the A07 report as it now stands — masthead with the row and group counts, <em>what stands out</em> in at most four lines, <em>distributions</em>, <em>relationships</em>, then every table folded behind one toggle. Ship it as a template in the skill, not as prose describing a template.</p>
+      </div></div>
+      <div class="opt a"><span class="opt-lab">Rejected</span><div class="opt-body">
+        <p>Add the description as its own step, which you can skip.</p>
+        <p class="cost">The status table would show whether it ran. But it is one more step to sign off, and looking at the data is not optional.</p>
+      </div></div>
+    </div>
+
+    <div class="item">
+      <div class="item-head"><span class="num">08</span><span class="item-title">Shorten the EDA report</span></div>
+      <p class="problem">The first report was mostly prose. You said the plots carry more than the writing, and you were right.</p>
+      <div class="opt r"><span class="opt-lab">Ruled</span><div class="opt-body">
+        <p>Fix the shape: <strong>what stands out</strong> (four lines maximum), <strong>key histograms</strong>, <strong>key scatters</strong>, then tables collapsed behind a toggle. Write prose only where a number misleads without it.</p>
+        <p class="cost">Settled by the same ruling as item 07. That item makes the report happen by default; this one fixes its shape, and naming the A07 report as the starting template decides both at once. The two stay separate because the skill needs both rules — when to produce it, and what it looks like.</p>
+      </div></div>
+      <div class="opt a"><span class="opt-lab">Rejected</span><div class="opt-body">
+        <p>No template. One rule instead: the report must fit on one screen before you scroll.</p>
+        <p class="cost">Easy to state. Hard to follow, and hard for the agent to check itself against.</p>
+      </div></div>
+    </div>
+
+  </div>
+
+  <h2>Modelling rules</h2>
+  <div class="stack">
+
+    <div class="item">
+      <div class="item-head"><span class="num">09</span><span class="item-title">Decide the scale, do not standardise by default</span></div>
+      <p class="problem">You asked whether the skill should always standardise. Then you found that brms centres predictors itself. Standardising is centring plus scaling, and the backend already does the centring.</p>
+      <div class="opt r"><span class="opt-lab">Ruled</span><div class="opt-body">
+        <p>Do not standardise by default. Make the statistical model step ask one question: <strong>what scale is each variable on, and why?</strong> The answer goes in the README. For a continuous predictor with no natural unit, the default answer is "standardise".</p>
+        <p class="cost">Add a second rule: <strong>check each justification against what the backend already does.</strong> Two of A07's four reasons for standardising were work brms had already done.</p>
+      </div></div>
+      <div class="opt a"><span class="opt-lab">Rejected</span><div class="opt-body">
+        <p>Standardise by default, with a named list of exceptions: counts, binary outcomes, indicator predictors, variables with real units.</p>
+        <p class="cost">Easier to follow. Wrong more often, and the exception list would keep growing.</p>
+      </div></div>
+    </div>
+
+    <div class="item">
+      <div class="item-head"><span class="num">10</span><span class="item-title">Test the code first, mimic the data second</span></div>
+      <p class="problem">The first generative model copied group structure, integer group sizes and the real correlation matrix. None of it was needed, and one part of it did harm.</p>
+      <div class="opt r"><span class="opt-lab">Ruled</span><div class="opt-body">
+        <p><strong>The chain the step is testing, in one line:</strong> the synthetic data mirrors the causal structure; the statistical model applies the identification strategy for the chosen estimand, using the adjustment set the DAG gives; recovery asks whether that pairing returns the parameters we put in.</p>
+        <div class="order">synthetic data&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mirrors the DAG<br>statistical model&nbsp;&nbsp;&nbsp;identification strategy + adjustment set<br>recovery&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;does that pairing return the true values?</div>
+        <p><strong>What this cannot catch:</strong> a wrong DAG. If the assumed structure is wrong, the simulation is wrong the same way, so the adjustment set that follows from it recovers cleanly and tells you nothing. The error cancels. Recovery tests the identification strategy <em>given</em> the DAG; item 20 tests the DAG itself. Neither substitutes for the other, and A07 ran only the first.</p>
+        <p><strong>Primary — the generative model exists to test whether the statistical model recovers the causal quantity.</strong> Three criteria.</p>
+        <p><strong>Mirror the DAG.</strong> Every variable and every arrow the DAG asserts is in the simulation. This is what makes recovery a test of the causal claim and not of a regression.<br>
+           <strong>Match the outcome's form.</strong> Whatever the statistical model assumes about how the outcome is produced — linear in its predictors, Gaussian noise — the generative model produces. Otherwise a recovery failure is ambiguous between a bug and misspecification.<br>
+           <strong>Every true value recoverable in principle</strong>, the estimand included.</p>
+        <p><strong>The generative model is deliberately richer than the statistical model, and the gap is the point.</strong> A07's simulation holds four variables and four arrows. The total-effect model holds one predictor. Group size exists in the simulated world and genuinely moves weight, and the fitted model does not mention it.</p>
+        <p>That omission is required, not sloppy: leaving group size out keeps the path <span class="v">F -&gt; G -&gt; W</span> open, so its contribution lands in the food coefficient. That is what "total" means. Recovery then checks whether omitting the mediator really does return the total effect, on data where the answer is known.</p>
+        <p>Close the gap and there is nothing left to test. If the simulation were just <span class="v">W = a + bF + noise</span>, fitting <span class="v">Ws ~ Fs</span> would recover <span class="v">b</span> and confirm only that brms can fit a one-predictor regression.</p>
+        <p>One world serves both analyses, and they have <strong>different right answers</strong>:</p>
+        <div class="order">Ws ~ Fs&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;should return&nbsp;&nbsp;-0.03&nbsp;&nbsp;&nbsp;got&nbsp;&nbsp;-0.038&nbsp;&nbsp;&nbsp;total effect<br>Ws ~ Fs + Gs&nbsp;&nbsp;&nbsp;&nbsp;should return&nbsp;&nbsp;+0.60&nbsp;&nbsp;&nbsp;got&nbsp;&nbsp;+0.492&nbsp;&nbsp;&nbsp;direct effect</div>
+        <p>Same simulated data, two statistical models, two targets, both hit. A generative model built to match one of them could not have served the other. So: <strong>structure richer, outcome's form identical.</strong></p>
+        <p><strong>Secondary — resemblance, only where it changes how the estimator behaves.</strong> Match the sample size, and match the features that drive the estimator's geometry. In A07 that was the 0.90 correlation between food and group size, which is what makes the direct effect imprecise. Nothing else. A variable that only ever appears as a predictor does not need a realistic distribution.</p>
+        <p><strong>When they conflict, offer two datasets and let the human choose.</strong> One tuned for recovery: round invented values, effects clearly away from zero, so a broken estimator fails visibly. One tuned for resemblance: calibrated to the real data, so the fit is exercised in the regime it will actually meet. The cost is a second recovery run. That is a decision for the human, not a rule.</p>
+        <p><strong>And a true value near zero is itself a decision to surface.</strong> If calibration drives a true effect to about zero, say so before the sign-off: the recovery test for that quantity is weak, because an estimator that always returned zero would pass it.</p>
+        <p class="cost">A07 is the worked example, and it went wrong my way. Calibrating the two weight coefficients to the real correlation matrix drove the true total effect to -0.03. I mentioned it as an aside inside another decision rather than surfacing it as its own. The direct effect at +0.60 kept the check honest by accident.</p>
+        <p class="cost">One correction on the record: my first version of this item said "same model, both directions". That is wrong, and it would have destroyed the point of the step.</p>
+      </div></div>
+      <div class="opt a"><span class="opt-lab">Rejected</span><div class="opt-body">
+        <p>Give a checklist — marginals, correlations, grouping, discreteness — and make the agent rule each one in or out.</p>
+        <p class="cost">Nothing would be forgotten. Every analysis pays four more sign-offs, and it still would not say which goal wins.</p>
+      </div></div>
+    </div>
+
+    <div class="item">
+      <div class="item-head"><span class="num">11</span><span class="item-title">Be able to defend each prior, and the set of them</span></div>
+      <p class="problem">The intercept prior <span class="v">normal(0, 0.2)</span> came from convention. In kilograms it claimed the average fox weight was known to within half a kilo. A07 also checked the priors one at a time, and only checked them as a set after you asked.</p>
+      <div class="opt r"><span class="opt-lab">Ruled</span><div class="opt-body">
+        <p><strong>Every prior needs two things.</strong></p>
+        <p><em>A reason.</em> Why this, and not something else. Naming the class — weakly informative, informative, empirical — says what kind of reason it is. "Empirical" is the admission that the reason came from this dataset.</p>
+        <p><em>A statement in real units.</em> <span class="v">normal(0, 0.2)</span> tells you nothing. "The average fox weighs between 4.07 and 4.99 kg" tells you it is far too confident. Same prior; only one version can be judged.</p>
+        <p><strong>Then simulate data from the priors alone, and look at it.</strong> Three questions:</p>
+        <div class="order">1&nbsp;&nbsp;Could a fox weigh that?<br>2&nbsp;&nbsp;Does a deliberately bad prior look different?<br>3&nbsp;&nbsp;Do the priors leave room for the real data, and for the<br>&nbsp;&nbsp;&nbsp;values used to build the synthetic data?</div>
+        <p>Question 2 is what lets the check fail. Without a bad prior to compare against, "looks fine" is unfalsifiable. Question 3 catches a failure the recovery step names but cannot see coming: if a true value sits far out in the tail of its own prior, recovery pulls toward zero and you blame the code.</p>
+        <p><strong>Then after the fit, check whether the prior is still steering.</strong> Turn the prior up and down and watch how far the answer moves. Barely moves means the prior is not doing much; moves a lot means it is steering. This is <em>power-scaling sensitivity</em> — <span class="v">priorsense::powerscale_sensitivity()</span>, which reads the existing draws and needs no refit. Above about 0.05 means the prior is doing real work.</p>
+        <p>It catches what a prior predictive check cannot. That one asks, before the data, whether the priors are sane. This one asks, after the data, whether the prior is still deciding the answer. A07's priors passed the first and failed the second:</p>
+        <div class="order">direct effect model&nbsp;&nbsp;&nbsp;b_Fs&nbsp;&nbsp;prior 0.120&nbsp;&nbsp;likelihood 0.139&nbsp;&nbsp;prior-data conflict<br>total effect model&nbsp;&nbsp;&nbsp;&nbsp;all variables 0.002 to 0.012&nbsp;&nbsp;clean<br><br>refitting the direct model with wider slopes:<br>&nbsp;&nbsp;normal(0, 0.5)&nbsp;&nbsp;+0.566 kg&nbsp;&nbsp;&nbsp;normal(0, 1)&nbsp;&nbsp;+0.703 kg&nbsp;&nbsp;&nbsp;normal(0, 2)&nbsp;&nbsp;+0.753 kg</div>
+        <p>The mechanism is worth knowing: the direct-effect model has predictors correlated at 0.90, so each coefficient is weakly identified — and weak identification is exactly where a prior does the most work. My step 05 sign-off said "no sensitivity candidates remain". This diagnostic would have said otherwise.</p>
+        <p><strong>One extra, only when there are many predictors.</strong> With one or two, the picture above shows everything. With ten or twenty, coefficients that each look harmless jointly claim the model explains nearly all the variation. Then check the implied R-squared.</p>
+        <div class="order">same slope prior normal(0, 0.5)<br>k =&nbsp;&nbsp;1&nbsp;&nbsp;&nbsp;median R2 = 0.16<br>k = 20&nbsp;&nbsp;&nbsp;median R2 = 0.92</div>
+        <p class="cost">A07 results, for reference: 2.1% of implied weights below 0 kg and 0.1% above 15 kg; the vague prior put 44% outside those bounds; the observed mean, sd, min and max all landed at the 52nd to 55th percentile of the prior predictive; and the true values used for the synthetic data sat at the 88th, 8th and 48th percentiles of their own priors.</p>
+      </div></div>
+      <div class="opt d"><span class="opt-lab">Detail — for the skill file, not the decision</span><div class="opt-body">
+        <p>R-squared is a <em>pushforward</em>, not a comparison of datasets: for each prior draw, take the linear predictor at the observed predictor values, then <span class="v">var(mu) / (var(mu) + sigma^2)</span>. No outcome enters.</p>
+        <p>And <strong>do not</strong> correlate one outcome vector against another. <span class="v">cor(y_prior, y_synthetic)</span> is about -0.002, and it stays at zero whether the slope prior has sd 0.05 or 5.00, because both vectors carry independent noise. A check that answers the same for a sane prior and an absurd one is not a check. The useful comparison between those two objects is coverage, which is question 3.</p>
+      </div></div>
+    </div>
+
+    <div class="item">
+      <div class="item-head"><span class="num">12</span><span class="item-title">Record what the backend does to you</span></div>
+      <p class="problem">Two brms facts cost time. Attaching <span class="v">rethinking</span> breaks every brms fit. The default prior on slopes is flat, so the prior check step cannot run until you replace it.</p>
+      <div class="opt r"><span class="opt-lab">Ruled</span><div class="opt-body">
+        <p>Add a <strong>Known traps</strong> section to <span class="v">backends/brms.md</span>. Three entries: never attach <span class="v">rethinking</span>; choose the slope prior at the statistical model step, because the default is flat; use Laplace while iterating and NUTS for what you report.</p>
+        <p class="cost">The last one cut a step from fifteen minutes to seventy seconds in A07.</p>
+      </div></div>
+      <div class="opt a"><span class="opt-lab">Rejected</span><div class="opt-body">
+        <p>Add a backend-neutral rule to the statistical model step: list every parameter's default prior and mark which must be replaced.</p>
+        <p class="cost">Works for any backend. More work to write for each new backend file.</p>
+      </div></div>
+    </div>
+
+    <div class="item">
+      <div class="item-head"><span class="num">13</span><span class="item-title">Let the skill carry its own ADRs</span></div>
+      <p class="problem">A07 wrote <span class="v">docs/adr/0001-brms-over-rethinking.md</span> into the project. But that decision is not project-specific. You would make it again in the next project.</p>
+      <div class="opt r"><span class="opt-lab">Ruled</span><div class="opt-body">
+        <p>Add <span class="v">docs/adr/</span> to the skill itself. One test decides where an ADR lives: <strong>would the decision be the same in your next project?</strong> If yes, it belongs to the skill. If no, it stays in the project.</p>
+        <p class="cost">The backend choice moves to the skill. A dataset-specific ruling stays where it was made.</p>
+      </div></div>
+      <div class="opt a"><span class="opt-lab">Rejected</span><div class="opt-body">
+        <p>Keep every ADR in projects. Have the skill read a shared folder that you name once.</p>
+        <p class="cost">More flexible. It needs setup in every project, and the skill works out of the box today.</p>
+      </div></div>
+    </div>
+
+  </div>
+
+
+  <h2>What the transcript shows</h2>
+  <p style="color:var(--muted);font-size:0.96rem;padding-bottom:0.3rem">Nine more items. These come from where the work went wrong or right during A07, not from what either of us proposed.</p>
+  <div class="stack">
+
+    <div class="item">
+      <div class="item-head"><span class="num">14</span><span class="item-title">A sign-off you do not understand is not a sign-off</span></div>
+      <p class="problem">Four decisions across the nine steps could not be ruled on. Two you rejected. Two you accepted anyway.</p>
+      <div class="problem q"><span class="quote">"I have no fucking clue what you are on about with M6. way too complicated."</span><span class="quote">"I accept the methodological statements although I do not really understand what you mean with M1"</span></div>
+      <p class="problem">The second one is the dangerous case. The skill records it as signed off. In fact nobody ruled on it. Item 03 stops decisions phrased in library internals. This is broader: M6 and M7 at step 02 used no jargon at all and still failed.</p>
+      <div class="opt r"><span class="opt-lab">Ruled</span><div class="opt-body">
+        <p><strong>No cap on the count.</strong> A cap does not tell a real decision from a detail; it just forces the fourth real decision into hiding. Keep every methodological decision.</p>
+        <p><strong>Two rules instead.</strong> Item 03's test decides what qualifies as a decision at all. And <strong>each M item must be stated so the human could restate it in their own words</strong> — when they cannot rule on one, the fix is to write it better, not to delete it.</p>
+        <p><strong>A count above three is a smell, not a limit.</strong> Check whether some are details, then keep every one that survives.</p>
+        <p class="cost">Step 02 of A07 had seven M items and two of them vanished once the generative model got simpler. The problem was never that seven is too many. It was that two of the seven were never decisions.</p>
+      </div></div>
+      <div class="opt a"><span class="opt-lab">Rejected</span><div class="opt-body">
+        <p>Cap the list at three M items per step, and treat anything past three as an implementation detail.</p>
+        <p class="cost">This was my first recommendation, and it was wrong. It would hide real methodological decisions whenever a step legitimately has four.</p>
+      </div></div>
+    </div>
+
+    <div class="item">
+      <div class="item-head"><span class="num">15</span><span class="item-title">Show the figure, do not describe it</span></div>
+      <p class="problem">The agent wrote nine figures to disk. Then it discussed them as if you could see them.</p>
+      <div class="problem q"><span class="quote">"what panel are you talking about?"</span></div>
+      <div class="opt r"><span class="opt-lab">Ruled</span><div class="opt-body">
+        <p>Add one rule to every step that makes a figure: <strong>put the finding in the text as a number, and give the file path.</strong> Never point at a panel by position without naming the file.</p>
+        <p class="cost">Cheap, and it fixes the whole class. In A07 the tables always landed. The panel references never did.</p>
+      </div></div>
+      <div class="opt a"><span class="opt-lab">Rejected</span><div class="opt-body">
+        <p>Publish all the figures as one running report that updates as the workflow proceeds.</p>
+        <p class="cost">You can always see the current state. It is a second document to keep in step with the README.</p>
+      </div></div>
+    </div>
+
+    <div class="item">
+      <div class="item-head"><span class="num">16</span><span class="item-title">Runtime is a decision, not an accident</span></div>
+      <p class="problem">One step took about fifteen minutes. You asked if that was avoidable. It was. The fix was one line and cut the step to seventy seconds.</p>
+      <div class="problem q"><span class="quote">"the last run took like 15m... where there improvements possible there?"</span></div>
+      <p class="problem">The rule that fixed it was already written down. ADR 0001 says use Laplace while iterating and NUTS for what you report. The agent wrote that ADR, then did not apply it.</p>
+      <div class="opt r"><span class="opt-lab">Ruled</span><div class="opt-body">
+        <p>Add one routine item to every step that fits a model: <strong>report the elapsed time, and say which fits used the fast algorithm and which used the reported one.</strong></p>
+        <p class="cost">This makes slowness visible where it happens. It also forces the agent to re-read its own backend policy each time.</p>
+      </div></div>
+      <div class="opt a"><span class="opt-lab">Rejected</span><div class="opt-body">
+        <p>Give each step a target runtime. If the agent goes over it, it must say why before it continues.</p>
+        <p class="cost">Stronger. The targets would be wrong for any model bigger than a homework problem.</p>
+      </div></div>
+    </div>
+
+    <div class="item">
+      <div class="item-head"><span class="num">17</span><span class="item-title">Name the checks that always run</span></div>
+      <p class="problem">You had to ask for three things that are standard practice: prior predictive coverage against the real data, a sample-size sweep, and one more sweep point at 100 000.</p>
+      <div class="problem q"><span class="quote">"shouldn't this step include generating some predictions using the prior so we can compare them to the actual distribution"</span></div>
+      <p class="problem">This is not the same as adding complexity. These are cheap checks that answer a question the step already asks. The agent left them out, and you had to know enough to ask.</p>
+      <div class="opt r"><span class="opt-lab">Ruled</span><div class="opt-body">
+        <p>Give each step file a short <strong>always run</strong> list of three or four checks. No sign-off needed. For the prior check: the implied outcome on its real scale, the implied effect sizes, and coverage of the observed data. For recovery: a sample-size sweep.</p>
+        <p class="cost">You should not need to know which checks exist. Keep the list short, or it becomes the checklist problem from item 10.</p>
+      </div></div>
+      <div class="opt a"><span class="opt-lab">Rejected</span><div class="opt-body">
+        <p>Add one line to each step: "name the checks you did not run, and why."</p>
+        <p class="cost">This shows the gap without prescribing. It relies on the agent knowing what it skipped, which is the thing that failed here.</p>
+      </div></div>
+    </div>
+
+    <div class="item">
+      <div class="item-head"><span class="num">18</span><span class="item-title">Keep the end-of-step report short</span></div>
+      <p class="problem">You interrupted mid-turn about ten times. Some were new questions. Several were you steering, because the turn ran on with no checkpoint.</p>
+      <p class="problem">Twice you told the agent to write less. Both times the next message was better, and neither lost anything you needed.</p>
+      <div class="opt r"><span class="opt-lab">Ruled</span><div class="opt-body">
+        <p>Add a size limit to the run protocol. <strong>The end-of-step report is the result, the decision list, and the name of the next step.</strong> No mechanism, no derivations, no answers to questions you have not asked. Offer depth in one line instead: "say if you want the reasoning."</p>
+        <p class="cost">Item 01 asks for this at the sentence level. This applies it to the whole message. The trimmed EDA report is where it worked: <em>"and the new report looks good"</em>.</p>
+      </div></div>
+      <div class="opt a"><span class="opt-lab">Rejected</span><div class="opt-body">
+        <p>Split each step into two messages. The result first, then the decision list once you have read it.</p>
+        <p class="cost">Each message is short. It doubles the number of turns needed to finish a workflow.</p>
+      </div></div>
+    </div>
+
+
+    <div class="item">
+      <div class="item-head"><span class="num">19</span><span class="item-title">Step 01 should leave something you can look at</span></div>
+      <p class="problem">Step 01 says "no script". So the estimand and the DAG existed only as text in a README. Those are the two things every later step depends on, and neither was visible.</p>
+      <p class="problem">The DAG did get drawn in A07 — but inside the step 02 script, one step after the decisions that rest on it were already signed off.</p>
+      <div class="opt r"><span class="opt-lab">Ruled</span><div class="opt-body">
+        <p>Give step 01 a script: <span class="v">01_estimand.R</span>. It draws the DAG, marks the adjustment set for each estimand, and lists every path from exposure to outcome with its state. No model is fitted, so this stays a cheap step.</p>
+        <p>Here is what A07's step 01 should have produced:</p>
+        <figure>
+          <img src="data:image/png;base64,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" alt="Two DAG diagrams side by side. Left, the total effect: arrows from area to avgfood, avgfood to groupsize, avgfood to weight, and groupsize to weight, with both paths into weight drawn in colour. Right, the direct effect: groupsize is drawn as a filled black box to show it is conditioned on, and the path through it is dashed and grey to show it is closed.">
+          <figcaption>The same DAG twice. On the left the indirect path is live, so both routes count. On the right the box marks group size as held fixed, and the path through it is closed. One picture carries the whole of the total-versus-direct distinction.</figcaption>
+        </figure>
+        <p class="cost">The picture also answers the homework question directly — "what is the minimal adjustment set?" — which no amount of README text did as fast.</p>
+      </div></div>
+      <div class="opt a"><span class="opt-lab">Rejected</span><div class="opt-body">
+        <p>Keep step 01 script-free. Move the DAG drawing to the front of the step that builds the generative model, and require the figure before any sign-off.</p>
+        <p class="cost">Fewer scripts. But the DAG still arrives after you have ruled on the estimand, and the estimand is the thing the DAG justifies.</p>
+      </div></div>
+    </div>
+
+
+    <div class="item">
+      <div class="item-head"><span class="num">20</span><span class="item-title">Test the DAG against the data</span></div>
+      <p class="problem">A07 assumed the DAG at step 01 and never tested it. Step 09 listed that as a caveat. It did not have to be one.</p>
+      <p class="problem">A DAG makes testable claims. This one says area is independent of weight once you know food, and independent of group size once you know food. Those claims can be checked, and they are the only check in the workflow that can <strong>falsify</strong> the structure everything else rests on.</p>
+      <div class="opt r"><span class="opt-lab">Ruled</span><div class="opt-body">
+        <p>Add one check to the data step: run <span class="v">dagitty::impliedConditionalIndependencies()</span> and <span class="v">dagitty::localTests()</span>, and report every claim with its interval. A violated claim is a decision — revise the DAG, or say why you keep it.</p>
+        <div class="order">A _||_ G | F&nbsp;&nbsp;&nbsp;estimate 0.155&nbsp;&nbsp;p 0.098&nbsp;&nbsp;95% [-0.029, 0.329]<br>A _||_ W | F&nbsp;&nbsp;&nbsp;estimate 0.089&nbsp;&nbsp;p 0.347&nbsp;&nbsp;95% [-0.096, 0.268]</div>
+        <p class="cost">A07 passes both. But report the interval, not the p-value alone — <span class="v">A _||_ W | F</span> spans [-0.10, 0.27], so a modest <span class="v">A -&gt; W</span> arrow would not have been caught with 116 foxes. The step must say "not contradicted", never "confirmed".</p>
+      </div></div>
+      <div class="opt a"><span class="opt-lab">Rejected</span><div class="opt-body">
+        <p>Run the tests, and also run a power check: simulate the DAG with the suspect arrow added, and report the smallest arrow the data could have detected.</p>
+        <p class="cost">This turns "not contradicted" into a number. It is one more simulation per suspect arrow, and you must choose which arrows to suspect.</p>
+      </div></div>
+    </div>
+
+
+    <div class="item">
+      <div class="item-head"><span class="num">21</span><span class="item-title">Name the middle link with the standard term</span></div>
+      <p class="problem">Step 01 produces a sentence in kilograms. The DAG step produces an adjustment set. Nothing in the skill names the object in between — the observable quantity the model actually estimates. A07 called it an "identification strategy", which is borrowed from the wrong literature.</p>
+      <div class="opt r"><span class="opt-lab">Ruled</span><div class="opt-body">
+        <p>Adopt the decomposition from Lundberg, Johnson &amp; Stewart (2021), which is the standard citation for exactly this gap.</p>
+        <div class="order">theoretical estimand&nbsp;&nbsp;&nbsp;the target quantity, tied to the question<br>empirical estimand&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the observable quantity informative about it,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;under stated identification assumptions<br>estimation strategy&nbsp;&nbsp;&nbsp;&nbsp;what is actually done with the data</div>
+        <p>Keep two DAG-side terms beside them: <strong>identification assumptions</strong> (the DAG itself, plus no unmeasured confounding) and <strong>adjustment set</strong> (what follows from them, by the backdoor criterion).</p>
+        <p><strong>Put "identification strategy" on the avoid list</strong>, with the reason. In econometrics it names a research <em>design</em> — instrumental variables, difference-in-differences, regression discontinuity. Someone reading "our identification strategy is to condition on group size" expects a design and finds a covariate.</p>
+        <p class="cost">The gain is concrete. A07's empirical estimand was <em>the coefficient on standardised food in a regression of standardised weight on food alone</em>. That is the object recovery checks, and until now the skill had no word for it.</p>
+      </div></div>
+      <div class="opt a"><span class="opt-lab">Rejected</span><div class="opt-body">
+        <p>Keep one word, <em>estimand</em>, and rely on the adjustment set to imply the rest.</p>
+        <p class="cost">Fewer terms to learn, and <span class="v">CONTEXT.md</span> stays short. But the thing recovery tests still has no name, which is how A07 ended up inventing one.</p>
+      </div></div>
+    </div>
+
+
+    <div class="item">
+      <div class="item-head"><span class="num">22</span><span class="item-title">Give every term a plain gloss and a worked example</span></div>
+      <p class="problem"><span class="v">CONTEXT.md</span> currently gives each term a definition and a list of words to avoid. That is enough for an agent to use the word correctly. It is not enough to explain the word to someone who is confused by it, or to show why the word is worth having.</p>
+      <div class="opt r"><span class="opt-lab">Ruled</span><div class="opt-body">
+        <p>Give every entry four parts: the <strong>definition</strong> and the <strong>avoid list</strong> as now, plus a <strong>plain gloss</strong> in one sentence, and a <strong>worked example</strong> taken from a real analysis.</p>
+        <p><strong>The examples must be validated</strong> — drawn from work that actually ran, not invented. A07 supplies them for most of the vocabulary already.</p>
+        <div class="teach">
+          <span class="teach-h">The shape, with the strongest entry done in full</span>
+          <div class="slot"><span class="slot-l">Adjustment set</span>
+            <p>The variables you condition on so the remaining association between exposure and outcome is causal. The DAG decides it, not you.</p>
+            <p><em>In plain terms:</em> the list of things to hold fixed so the comparison is fair.</p>
+            <p><em>Avoid:</em> control variables, covariates — when the set is what is meant.</p>
+            <p><em>Why the term earns its place:</em> A07's two analyses differ <strong>only</strong> in this. With the empty set the food effect is -0.02 sd. With {G} it is +0.48. Same data, same likelihood, opposite sign.</p></div>
+        </div>
+        <p><strong>The test for whether an example is worth including:</strong> it must show what goes wrong when the distinction is ignored. A definition says what a word means. This line says why you cannot do without it.</p>
+        <p class="cost">Other entries A07 can supply from real work: theoretical against empirical estimand (a sentence in kilograms, against the coefficient on standardised food); generative against statistical model (four variables, against one predictor); weakly informative against empirical prior (<span class="v">normal(0, 1)</span> justified by fox biology, against <span class="v">normal(0, 0.2)</span> justified by the standardisation that used the data).</p>
+      </div></div>
+      <div class="opt a"><span class="opt-lab">Alternative</span><div class="opt-body">
+        <p>Keep <span class="v">CONTEXT.md</span> as a bare glossary, and let the agent explain a term on request using whatever example is to hand.</p>
+        <p class="cost">The file stays short. But the explanation is improvised each time, so it is not validated, and two sessions can explain the same term two different ways.</p>
+      </div></div>
+    </div>
+
+    <div class="worked">
+      <h3>What worked — do not change it</h3>
+      <ul>
+        <li><strong>Run the code, show the output.</strong> Every table landed. Every assertion got challenged. You did not accept that the 50 000 miss was luck until 200 replicate datasets were on the page.</li>
+        <li><strong>Compare two things side by side.</strong> Vague against weakly informative priors. Laplace against NUTS. Identity against log link. None of these was questioned, and you built on several of them.</li>
+        <li><strong>Write every DAG edge as a claim.</strong> <em>"approved that looks intuitive"</em> — the only decision list in the whole workflow that passed with no follow-up question.</li>
+        <li><strong>The parked improvements table.</strong> You used it eleven times. It turns "should this be more complex?" into a question with a condition attached.</li>
+        <li><strong>Ask a check question before explaining.</strong> The two backdoor questions found a real gap — a reversed arrow — that no amount of explaining would have surfaced.</li>
+      </ul>
+    </div>
+
+  </div>
+
+
+  <h2>Backend</h2>
+  <div class="stack">
+
+    <div class="item">
+      <div class="item-head"><span class="num">23</span><span class="item-title">Add a Python backend</span></div>
+      <p class="problem">The skill ships one backend file, <span class="v">backends/brms.md</span>. ADR 0001 already says a second backend should be one new file rather than a rewrite. Nobody has tested that claim.</p>
+      <p class="problem">Separately, you asked whether to move to Python because coding agents handle its syntax better. That was a question about <em>switching</em>. This is a different question: can the skill serve both?</p>
+      <div class="opt r"><span class="opt-lab">Ruled</span><div class="opt-body">
+        <p><strong>Add <span class="v">backends/bambi.md</span> and make Python the default, switching mid-course.</strong> The homework exercises become the vehicle for learning the stack and shaking out the skill.</p>
+        <p>Bambi gives the formula interface over PyMC, ArviZ gives the diagnostics. Every node the workflow uses has an equivalent, and two of them are the same tool in both languages.</p>
+        <div class="order">node&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;R&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Python<br>adjustment sets&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dagitty&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pgmpy<br>testable implications&nbsp;&nbsp;dagitty::localTests&nbsp;&nbsp;&nbsp;hand-rolled<br>formula -&gt; model&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;brms::bf&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bambi.Model<br>prior predictive&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sample_prior="only"&nbsp;&nbsp;model.prior_predictive()<br>diagnostics&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;summarise_draws&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;az.summary<br>posterior predictive&nbsp;&nbsp;&nbsp;pp_check&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;az.plot_ppc<br>estimand&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;marginaleffects&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;marginaleffects&nbsp;&nbsp;same pkg<br>model comparison&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;loo_compare&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;az.compare<br>prior sensitivity&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;priorsense&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;arviz.psens&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;same method</div>
+        <p><strong>The one real gap is the DAG step, and it has been measured rather than estimated.</strong> <span class="v">pgmpy</span> finds adjustment sets well, but its <span class="v">get_independencies()</span> attempts the full exponential enumeration, has an open issue against it, and failed all nine textbook questions dagitty solved.</p>
+        <p>The fix is to not use it. The <strong>local Markov property</strong> gives one independence statement per node — linear, not exponential — and <span class="v">networkx</span> supplies descendants, parents and <span class="v">is_d_separator</span> directly. A prototype in 81 lines, numpy and networkx only, reproduces dagitty's A07 answers to four decimal places:</p>
+        <div class="order">claim&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;prototype&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dagitty<br>A _||_ G | F&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.1551&nbsp;&nbsp;[-0.0289, +0.3289]&nbsp;&nbsp;&nbsp;0.1551&nbsp;&nbsp;[-0.0289, 0.3291]<br>A _||_ W | F&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.0887&nbsp;&nbsp;[-0.0960, +0.2674]&nbsp;&nbsp;&nbsp;0.0887&nbsp;&nbsp;[-0.0960, 0.2675]</div>
+        <p>Remaining work for a course-grade helper: path listing with open or closed status (~20 lines), DAG plotting (matplotlib, same effort as the R version), and adjustment sets (pgmpy, or ~20 lines hand-rolled). <strong>About 150 lines in one module</strong>, written once and validated against A07 where every answer is already known.</p>
+        <p>Limits worth knowing: minimal separators are brute force over subsets, so a DAG past about ten nodes would need Takata's algorithm as dagitty uses. No latent variables or bidirected edges. Continuous data only. None of that binds for homework DAGs. The prototype is at <span class="v">docs/dag_tools_prototype.py</span>.</p>
+        <p class="cost">Adding a backend is not switching. The argument for staying in R through the course was about <em>your</em> ability to read the code critically, and adding a second file costs nothing there. It just means the skill is ready when a project sits outside the course.</p>
+        <p class="cost">The honest cost: two backend files to keep in step, and item 17's "always run" list needs an implementation in each.</p>
+      </div></div>
+      <div class="opt a"><span class="opt-lab">Rejected</span><div class="opt-body">
+        <p>Keep one backend. Write the Python file only when a project actually needs it.</p>
+        <p class="cost">Nothing to keep in step, and the file gets written against a real problem rather than a hypothetical one. But ADR 0001's claim — that a second backend is one file, not a rewrite — stays untested until then.</p>
+      </div></div>
+    </div>
+
+  </div>
+
+  <footer>
+    Source: eleven items parked during homework A07, two raised at this retrospective, nine from the transcript, one on the backend.<br>
+    Skill: <span class="v">~/.claude/skills/bayes-workflow/</span> · nothing is applied yet.
+  </footer>
+
+</div>

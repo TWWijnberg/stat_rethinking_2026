@@ -1,0 +1,231 @@
+<title>Why Feeding Foxes Fails</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+:root {
+  --ground:#F7F8F6; --surface:#FFFFFF; --ink:#17211F; --muted:#667069;
+  --rule:#DCE2DD; --rule-soft:#EAEEEA;
+  --direct:#A8501F; --indirect:#5B4B8A; --total:#2C6455; --fig-bg:#FFFFFF;
+  --display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --body:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono","SFMono-Regular",Consolas,monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground:#111514; --surface:#181D1B; --ink:#E7ECE8; --muted:#94A099;
+    --rule:#2A322E; --rule-soft:#212724;
+    --direct:#DE8E5C; --indirect:#9C8CD1; --total:#6FB6A2; --fig-bg:#E9EDEA;
+  }
+}
+:root[data-theme="dark"] {
+  --ground:#111514; --surface:#181D1B; --ink:#E7ECE8; --muted:#94A099;
+  --rule:#2A322E; --rule-soft:#212724;
+  --direct:#DE8E5C; --indirect:#9C8CD1; --total:#6FB6A2; --fig-bg:#E9EDEA;
+}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font-family:var(--body);font-size:17px;
+     line-height:1.55;margin:0;padding:0 1.5rem 5rem;-webkit-font-smoothing:antialiased}
+.wrap{max-width:66rem;margin:0 auto;display:flex;flex-direction:column;gap:3rem}
+
+.masthead{padding-top:3.5rem;display:flex;flex-direction:column;gap:0.85rem}
+.eyebrow{font-family:var(--mono);font-size:0.7rem;font-weight:500;letter-spacing:0.14em;
+         text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(2rem,4.6vw,2.9rem);
+   line-height:1.05;letter-spacing:-0.02em;margin:0;text-wrap:balance}
+.standfirst{font-size:1.08rem;color:var(--muted);max-width:62ch;margin:0}
+
+.answer{background:var(--surface);border:1px solid var(--rule);
+        border-left:4px solid var(--total);padding:1.5rem 1.75rem;
+        display:flex;flex-direction:column;gap:0.9rem}
+.answer p{margin:0;max-width:64ch;font-size:1.05rem}
+.answer strong{font-weight:600}
+
+.headline{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:1.5rem}
+.hl{display:flex;flex-direction:column;gap:0.3rem;padding:1.1rem 1.25rem;
+    background:var(--surface);border:1px solid var(--rule)}
+.hl-lab{font-family:var(--mono);font-size:0.66rem;letter-spacing:0.1em;
+        text-transform:uppercase;color:var(--muted)}
+.hl-n{font-family:var(--mono);font-size:1.85rem;font-weight:600;
+      font-variant-numeric:tabular-nums;line-height:1}
+.hl-ci{font-family:var(--mono);font-size:0.74rem;color:var(--muted);
+       font-variant-numeric:tabular-nums}
+.hl.d{border-top:3px solid var(--direct)} .hl.d .hl-n{color:var(--direct)}
+.hl.i{border-top:3px solid var(--indirect)} .hl.i .hl-n{color:var(--indirect)}
+.hl.t{border-top:3px solid var(--total)} .hl.t .hl-n{color:var(--total)}
+
+section{display:flex;flex-direction:column;gap:1rem}
+h2{font-family:var(--display);font-weight:600;font-size:1.25rem;letter-spacing:-0.01em;
+   margin:0;padding-bottom:0.45rem;border-bottom:2px solid var(--ink)}
+p{margin:0;max-width:70ch}
+code,.v{font-family:var(--mono);font-size:0.86em;background:var(--rule-soft);
+        padding:0.08em 0.35em;border-radius:2px}
+
+.eq{font-family:var(--mono);font-size:0.95rem;background:var(--surface);
+    border:1px solid var(--rule);padding:1.1rem 1.25rem;overflow-x:auto;
+    font-variant-numeric:tabular-nums;line-height:2}
+.eq .d{color:var(--direct);font-weight:600}
+.eq .i{color:var(--indirect);font-weight:600}
+.eq .t{color:var(--total);font-weight:600}
+
+figure{margin:0;display:flex;flex-direction:column;gap:0.6rem}
+figure img{width:100%;max-width:100%;display:block;background:var(--fig-bg);
+           border:1px solid var(--rule);padding:0.4rem}
+figcaption{font-size:0.88rem;color:var(--muted);max-width:70ch}
+
+.limits{display:flex;flex-direction:column;gap:0.8rem}
+.limit{display:grid;grid-template-columns:1.6rem 1fr;gap:0 0.85rem;align-items:baseline}
+.limit::before{content:"\2715";font-family:var(--mono);font-size:0.8rem;color:var(--direct)}
+.limit p{font-size:0.98rem}
+
+details{background:var(--surface);border:1px solid var(--rule);padding:0 1.15rem}
+summary{font-family:var(--mono);font-size:0.74rem;font-weight:600;letter-spacing:0.1em;
+        text-transform:uppercase;color:var(--muted);cursor:pointer;padding:0.95rem 0}
+summary:hover{color:var(--ink)}
+.detail-body{display:flex;flex-direction:column;gap:1.6rem;padding:0.35rem 0 1.4rem}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-family:var(--mono);font-size:0.8rem;
+      font-variant-numeric:tabular-nums}
+caption{text-align:left;font-family:var(--mono);font-size:0.68rem;letter-spacing:0.1em;
+        text-transform:uppercase;color:var(--muted);padding-bottom:0.45rem}
+th,td{padding:0.46rem 0.7rem;text-align:right;border-bottom:1px solid var(--rule-soft);
+      white-space:nowrap}
+thead th{border-bottom:1px solid var(--rule);color:var(--muted);font-weight:500;
+         font-size:0.7rem;letter-spacing:0.06em;text-transform:uppercase}
+th[scope="row"]{text-align:left;font-weight:500}
+tbody tr:last-child td,tbody tr:last-child th{border-bottom:none}
+.pos{color:var(--direct);font-weight:600}
+.neg{color:var(--indirect);font-weight:600}
+.tot{color:var(--total);font-weight:600}
+
+footer{border-top:1px solid var(--rule);padding-top:1.1rem;font-family:var(--mono);
+       font-size:0.7rem;color:var(--muted);line-height:1.8}
+:focus-visible{outline:2px solid var(--direct);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">Statistical Rethinking 2026 · Homework A07 · Step 09</div>
+    <h1>Why Feeding Foxes Fails</h1>
+    <p class="standfirst">The total causal effect of a territory's food supply on the weight of the foxes living in it. 116 foxes, 30 urban territories, two estimands.</p>
+  </header>
+
+  <div class="answer">
+    <p><strong>Putting more food in a fox territory does not produce heavier foxes.</strong> Raising <span class="v">avgfood</span> by one standard deviation changes the average fox's weight by <strong>&minus;0.03 kg</strong>, with an 89% interval from &minus;0.21 to +0.15 kg. On a 4.5 kg animal, that is nothing.</p>
+    <p><strong>But not because food doesn't matter.</strong> Food makes each fox meaningfully heavier &mdash; and attracts enough extra foxes to eat the gain. Two substantial effects, cancelling.</p>
+  </div>
+
+  <div class="headline">
+    <div class="hl d">
+      <span class="hl-lab">Direct — food → weight</span>
+      <span class="hl-n">+0.57 kg</span>
+      <span class="hl-ci">89% [+0.22, +0.91] · P(&gt;0) = 100%</span>
+    </div>
+    <div class="hl i">
+      <span class="hl-lab">Indirect — food → group → weight</span>
+      <span class="hl-n">&minus;0.61 kg</span>
+      <span class="hl-ci">89% [&minus;0.92, &minus;0.31] · P(&gt;0) = 0%</span>
+    </div>
+    <div class="hl t">
+      <span class="hl-lab">Total — what actually happens</span>
+      <span class="hl-n">&minus;0.03 kg</span>
+      <span class="hl-ci">89% [&minus;0.21, +0.15] · P(&gt;0) = 40%</span>
+    </div>
+  </div>
+
+  <section>
+    <h2>The arithmetic of the cancellation</h2>
+    <div class="eq">
+      <span class="t">total</span> &nbsp;=&nbsp; <span class="d">direct</span> &nbsp;+&nbsp; <span class="i">indirect</span><br>
+      <span class="t">&minus;0.03 kg</span> &nbsp;=&nbsp; <span class="d">+0.57 kg</span> &nbsp;+&nbsp; <span class="i">(&minus;0.61 kg)</span>
+    </div>
+    <p>The indirect path runs <span class="v">food → group size → weight</span>. A territory with one standard deviation more food supports a larger group &mdash; the two are correlated at 0.90 &mdash; and each additional standard deviation of group size costs a fox <strong>0.68 kg</strong> (89% [&minus;1.02, &minus;0.35]). More mouths, same territory, less each.</p>
+    <p>Both paths are real: neither interval comes close to zero. What is near zero is only their sum.</p>
+  </section>
+
+  <section>
+    <h2>The result</h2>
+    <figure>
+      <img src="data:image/png;base64,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" alt="Three panels. Left: three overlapping posterior densities showing the direct effect centred near +0.57 kg, the indirect effect near -0.61 kg, and the total tightly centred on zero. Middle: the posterior of the total effect, centred at -0.029 kg with an 89% interval from -0.205 to +0.152. Right: expected fox weight against food, with a steeply rising line when group size is held fixed and a flat line when group size is free to respond.">
+      <figcaption><strong>Left:</strong> the two paths and their sum. The direct and indirect posteriors sit either side of zero; the total straddles it. <strong>Middle:</strong> the homework's answer. <strong>Right:</strong> the same story as a prediction &mdash; hold group size fixed and food buys weight steeply; let group size respond and the line goes flat.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2>What this does not license</h2>
+    <div class="limits">
+      <div class="limit"><p><strong>"Food doesn't affect fox weight."</strong> It does, substantially: +0.57 kg per standard deviation, with an interval nowhere near zero. The total effect is small because of cancellation, not absence.</p></div>
+      <div class="limit"><p><strong>"Feeding foxes makes them lighter."</strong> The total effect's interval spans zero in both directions. The honest claim is that the effect is <em>small</em>, not that it is negative.</p></div>
+      <div class="limit"><p><strong>"This model predicts fox weight."</strong> It explains 0.1% of the variation in weight from food alone, 10% including group size. Whatever drives an individual fox's weight is mostly not in this dataset. Estimating an average causal effect and predicting an individual outcome are different jobs.</p></div>
+      <div class="limit"><p><strong>"These are the effects for foxes in general."</strong> The estimand averages over the 116 foxes in this sample. Generalising to British urban foxes at large needs a sampling argument this analysis does not make.</p></div>
+      <div class="limit"><p><strong>"The DAG is verified."</strong> It was assumed, not tested. Every number here is conditional on <span class="v">A → F → G → W</span> with <span class="v">F → W</span>, and on there being no unobserved cause of both food and weight.</p></div>
+    </div>
+  </section>
+
+  <details>
+    <summary>Method and diagnostics</summary>
+    <div class="detail-body">
+
+      <div class="scroll">
+        <table>
+          <caption>Estimands and how each was identified</caption>
+          <thead><tr><th scope="col"></th><th>Intervention</th><th>Adjustment set</th><th>Model</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Total effect</th><td>raise food, group size free</td><td>∅</td><td><span class="v">Ws ~ Fs</span></td></tr>
+            <tr><th scope="row">Direct effect</th><td>raise food, group size held</td><td>{G}</td><td><span class="v">Ws ~ Fs + Gs</span></td></tr>
+          </tbody>
+        </table>
+        <p style="font-size:0.88rem;color:var(--muted);margin-top:0.6rem">Adjustment sets from <span class="v">dagitty::adjustmentSets()</span>. There is no backdoor path from food to weight — area's only outgoing edge is to food — so the total effect needs no adjustment. Group size is a mediator, so conditioning on it yields the direct effect, a different estimand. The two are reported side by side and never ranked.</p>
+      </div>
+
+      <div class="scroll">
+        <table>
+          <caption>All quantities, in kg per 1 sd of avgfood (1 sd = 0.198 index units)</caption>
+          <thead><tr><th scope="col"></th><th>sd scale</th><th>kg</th><th>89% interval</th><th>P(&gt;0)</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Total effect</th><td class="tot">&minus;0.024</td><td class="tot">&minus;0.029</td><td>[&minus;0.205, +0.152]</td><td>40%</td></tr>
+            <tr><th scope="row">Direct effect</th><td class="pos">+0.478</td><td class="pos">+0.566</td><td>[+0.223, +0.910]</td><td>100%</td></tr>
+            <tr><th scope="row">Indirect path</th><td class="neg">&minus;0.517</td><td class="neg">&minus;0.612</td><td>[&minus;0.915, &minus;0.312]</td><td>0%</td></tr>
+            <tr><th scope="row">Group size (per 1 sd of G)</th><td class="neg">&minus;0.573</td><td class="neg">&minus;0.679</td><td>[&minus;1.015, &minus;0.346]</td><td>0%</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="scroll">
+        <table>
+          <caption>Priors — all weakly informative, none set from this dataset</caption>
+          <thead><tr><th scope="col"></th><th>Prior</th><th>In plain terms</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Intercept</th><td>normal(0, 1)</td><td style="text-align:left">the average fox weighs 2.2–6.9 kg</td></tr>
+            <tr><th scope="row">Slopes</th><td>normal(0, 0.5)</td><td style="text-align:left">a predictor moves weight ≤ ~±1.2 kg per sd</td></tr>
+            <tr><th scope="row">Sigma</th><td>exponential(1)</td><td style="text-align:left">residual spread no larger than weight's own</td></tr>
+          </tbody>
+        </table>
+        <p style="font-size:0.88rem;color:var(--muted);margin-top:0.6rem">Prior predictive draws put 2.1% of implied fox weights below 0 kg and 0.1% above 15 kg. The observed mean, sd, min and max all sit at the 52nd–55th percentile of the prior predictive — the priors contain the data without being tuned to it.</p>
+      </div>
+
+      <div class="scroll">
+        <table>
+          <caption>Sampler diagnostics — 4 chains × 2000 iterations, 1000 warmup</caption>
+          <thead><tr><th scope="col"></th><th>Divergences</th><th>Treedepth hits</th><th>Max R̂</th><th>Min ESS bulk</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Total effect</th><td>0</td><td>0</td><td>1.002</td><td>3515</td></tr>
+            <tr><th scope="row">Direct effect</th><td>0</td><td>0</td><td>1.008</td><td>1955</td></tr>
+          </tbody>
+        </table>
+        <p style="font-size:0.88rem;color:var(--muted);margin-top:0.6rem">Recovery was verified first: both models were fitted to simulated data with known parameters and recovered them, at n = 116 and across a sweep to n = 100 000. Posterior predictive checks passed on the outcome's shape, both tails, weight by food quartile, and the 30 territory means. Sensitivity: replacing the intercept prior with the tighter <span class="v">normal(0, 0.2)</span> moves the total effect by 0.0002 kg — under 1% of one posterior standard deviation.</p>
+      </div>
+
+    </div>
+  </details>
+
+  <footer>
+    Source: <span class="v">data(foxes)</span>, McElreath's <span class="v">rethinking</span> package · 116 foxes, 30 territories, complete<br>
+    Fitted with brms 2.23.0 on cmdstanr / CmdStan 2.37.0 · workflow: estimand → generative model → data → statistical model → prior check → recovery → fit → posterior check → estimate<br>
+    Every number computed on posterior draws, then summarised.
+  </footer>
+
+</div>
