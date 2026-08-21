@@ -1,0 +1,7 @@
+[
+  {
+    "key": "ctrl+enter",
+    "command": "r.runSelection",
+    "when": "editorTextFocus && editorLangId == 'r'"
+  }
+]
